@@ -18,17 +18,17 @@ export function VisualMark({ icon, tone = 'purple', size = 'large', label }: { i
   const dimension = size === 'small' ? 44 : size === 'medium' ? 56 : 72;
   const iconSize = size === 'small' ? 20 : size === 'medium' ? 26 : 32;
   const palette = toneMap[tone];
-  return <View accessible={Boolean(label)} accessibilityLabel={label} style={[styles.mark, { width: dimension, height: dimension, borderRadius: dimension * 0.28, backgroundColor: palette.wash, borderColor: palette.line }]}><Ionicons name={icon} size={iconSize} color={palette.icon} /></View>;
+  return <View accessible={Boolean(label)} accessibilityLabel={label} style={[styles.mark, { width: dimension, height: dimension, borderRadius: dimension * 0.28, backgroundColor: palette.wash, borderColor: palette.line }]}><Ionicons accessible={false} aria-hidden name={icon} size={iconSize} color={palette.icon} /></View>;
 }
 
-export function MetricTile({ icon, label, value, tone = 'purple' }: { icon: IconName; label: string; value: string; tone?: VisualTone }) {
+export function MetricTile({ icon, label, value, tone = 'purple', truncateValue = true }: { icon: IconName; label: string; value: string; tone?: VisualTone; truncateValue?: boolean }) {
   const palette = toneMap[tone];
-  return <View style={[styles.metricTile, { borderTopColor: palette.line }]}><Ionicons name={icon} size={16} color={palette.icon} /><HText variant="micro" color={colors.muted}>{label}</HText><HText variant="bodyStrong" numberOfLines={2}>{value}</HText></View>;
+  return <View style={[styles.metricTile, { borderTopColor: palette.line }]}><Ionicons accessible={false} aria-hidden name={icon} size={16} color={palette.icon} /><HText variant="micro" color={colors.muted}>{label}</HText><HText variant="bodyStrong" numberOfLines={truncateValue ? 2 : undefined}>{value}</HText></View>;
 }
 
-export function IconRow({ icon, title, detail, tone = 'purple' }: { icon: IconName; title: string; detail?: string; tone?: VisualTone }) {
+export function IconRow({ icon, title, detail, tone = 'purple', truncateText = true }: { icon: IconName; title: string; detail?: string; tone?: VisualTone; truncateText?: boolean }) {
   const palette = toneMap[tone];
-  return <View style={styles.iconRow}><View style={[styles.rowIcon, { backgroundColor: palette.wash }]}><Ionicons name={icon} size={18} color={tone === 'neutral' ? colors.mutedStrong : tone === 'coral' ? colors.coral : tone === 'success' ? colors.success : colors.primary} /></View><View style={styles.rowCopy}><HText variant="bodyStrong" numberOfLines={1}>{title}</HText>{detail && <HText variant="caption" color={colors.muted} numberOfLines={1}>{detail}</HText>}</View></View>;
+  return <View style={styles.iconRow}><View style={[styles.rowIcon, { backgroundColor: palette.wash }]}><Ionicons accessible={false} aria-hidden name={icon} size={18} color={tone === 'neutral' ? colors.mutedStrong : tone === 'coral' ? colors.coral : tone === 'success' ? colors.success : colors.primary} /></View><View style={styles.rowCopy}><HText variant="bodyStrong" numberOfLines={truncateText ? 1 : undefined}>{title}</HText>{detail && <HText variant="caption" color={colors.muted} numberOfLines={truncateText ? 1 : undefined}>{detail}</HText>}</View></View>;
 }
 
 export function StepRail({ steps }: { steps: { icon: IconName; label: string }[] }) {

@@ -25,18 +25,18 @@ export function Card({ children, style, tone = 'default', onPress }: PropsWithCh
 
 export function Button({ children, onPress, variant = 'primary', icon, disabled = false, style, accessibilityLabel }: PropsWithChildren<{ onPress?: () => void; variant?: 'primary' | 'secondary' | 'ghost' | 'danger'; icon?: IconName; disabled?: boolean; style?: ViewStyle; accessibilityLabel?: string }>) {
   return <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel} disabled={disabled} onPress={onPress} style={({ pressed }) => [styles.button, variant === 'secondary' && styles.buttonSecondary, variant === 'ghost' && styles.buttonGhost, variant === 'danger' && styles.buttonDanger, disabled && styles.buttonDisabled, pressed && styles.buttonPressed, style]}>
-    {icon && <Ionicons name={icon} size={19} color={variant === 'primary' || variant === 'danger' ? colors.white : colors.primary} />}
+    {icon && <Ionicons accessible={false} aria-hidden name={icon} size={19} color={variant === 'primary' || variant === 'danger' ? colors.white : colors.primary} />}
     <HText variant="bodyStrong" color={variant === 'primary' || variant === 'danger' ? colors.white : colors.primary}>{children}</HText>
   </Pressable>;
 }
 
 export function IconButton({ icon, onPress, label, color = colors.ink, background = colors.surface }: { icon: IconName; onPress: () => void; label: string; color?: string; background?: string }) {
-  return <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} hitSlop={6} style={({ pressed }) => [styles.iconButton, { backgroundColor: background }, pressed && styles.buttonPressed]}><Ionicons name={icon} size={21} color={color} /></Pressable>;
+  return <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} hitSlop={6} style={({ pressed }) => [styles.iconButton, { backgroundColor: background }, pressed && styles.buttonPressed]}><Ionicons accessible={false} aria-hidden name={icon} size={21} color={color} /></Pressable>;
 }
 
 export function Pill({ children, tone = 'neutral', icon }: PropsWithChildren<{ tone?: 'neutral' | 'success' | 'warning' | 'coral' | 'purple'; icon?: IconName }>) {
   const palette = { neutral: [colors.surfaceMuted, colors.mutedStrong], success: [colors.successSoft, colors.success], warning: [colors.warningSoft, colors.warning], coral: [colors.coralSoft, colors.coral], purple: [colors.primarySoft, colors.primaryDark] }[tone];
-  return <View style={[styles.pill, { backgroundColor: palette[0] }]}>{icon && <Ionicons name={icon} size={13} color={palette[1]} />}<HText variant="micro" color={palette[1]}>{children}</HText></View>;
+  return <View style={[styles.pill, { backgroundColor: palette[0] }]}>{icon && <Ionicons accessible={false} aria-hidden name={icon} size={13} color={palette[1]} />}<HText variant="micro" color={palette[1]}>{children}</HText></View>;
 }
 
 export function StatusBadge({ status, label }: { status: string; label: string }) {
@@ -93,7 +93,7 @@ export function TabBar() {
     { path: '/(tabs)/matches', label: 'Matches', icon: 'sparkles-outline', activeIcon: 'sparkles' },
     { path: '/(tabs)/plan', label: 'My plan', icon: 'checkbox-outline', activeIcon: 'checkbox' },
   ];
-  return <View style={[styles.tabBar, { paddingBottom: Math.max(4, insets.bottom) }]}>{tabs.map((tab) => { const tabPath = tab.path === '/(tabs)' ? '/' : tab.path.replace('/(tabs)', ''); const active = normalizedPath === tabPath || (tabPath !== '/' && normalizedPath.startsWith(tabPath)); return <Pressable accessibilityRole="tab" accessibilityState={{ selected: active }} accessibilityLabel={tab.label} key={tab.path} onPress={() => router.replace(tab.path)} style={({ pressed }) => [styles.tabItem, pressed && styles.buttonPressed]}><Ionicons name={active ? tab.activeIcon : tab.icon} size={22} color={active ? colors.primary : colors.muted} /><HText variant="micro" color={active ? colors.primary : colors.muted}>{tab.label}</HText></Pressable>; })}</View>;
+  return <View style={[styles.tabBar, { paddingBottom: Math.max(4, insets.bottom) }]}>{tabs.map((tab) => { const tabPath = tab.path === '/(tabs)' ? '/' : tab.path.replace('/(tabs)', ''); const active = normalizedPath === tabPath || (tabPath !== '/' && normalizedPath.startsWith(tabPath)); return <Pressable accessibilityRole="tab" accessibilityState={{ selected: active }} accessibilityLabel={tab.label} key={tab.path} onPress={() => router.replace(tab.path)} style={({ pressed }) => [styles.tabItem, pressed && styles.buttonPressed]}><Ionicons accessible={false} aria-hidden name={active ? tab.activeIcon : tab.icon} size={22} color={active ? colors.primary : colors.muted} /><HText variant="micro" color={active ? colors.primary : colors.muted}>{tab.label}</HText></Pressable>; })}</View>;
 }
 
 export function useSpringPress() {
