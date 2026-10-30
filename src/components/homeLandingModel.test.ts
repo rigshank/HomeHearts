@@ -6,6 +6,10 @@ describe('HomeHearts landing feature model', () => {
     expect(LANDING_FEATURES.map((feature) => feature.id)).toEqual(['help', 'compare', 'call']);
   });
 
+  it('uses direct task language for the three starting points', () => {
+    expect(LANDING_FEATURES.map((feature) => feature.title)).toEqual(['Find help now', 'Compare costs', 'Get ready to call']);
+  });
+
   it('wraps previous and next feature indexes', () => {
     expect(getLandingFeature(-1).id).toBe('call');
     expect(getLandingFeature(3).id).toBe('help');

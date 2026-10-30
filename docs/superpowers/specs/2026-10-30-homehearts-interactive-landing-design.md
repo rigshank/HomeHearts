@@ -1,8 +1,8 @@
-# HomeHearts Interactive Landing Design
+# HomeHearts Branded Landing Design
 
 ## Intent
 
-Replace the current static Home screen hero with a compact, interactive launch surface inspired by the supplied three-phone reference. The landing page should feel like the app opening up into useful possibilities, while keeping a person in housing crisis one tap away from a real next step.
+Replace the previous static Home screen hero with a branded, direct task chooser inspired by the supplied three-phone reference. The landing page should feel like HomeHearts opening into useful possibilities, while keeping a person in housing crisis one tap away from a real next step.
 
 The reference is used for composition and energy only. HomeHearts will not copy the smart-home content, use generated photography, or introduce a marketing-style onboarding wall.
 
@@ -11,7 +11,7 @@ The reference is used for composition and energy only. HomeHearts will not copy 
 - Make the first viewport visually active without becoming wordy.
 - Show three real HomeHearts capabilities: find help, compare paths, and prepare to call.
 - Keep the primary route to intake obvious and reachable immediately.
-- Use a controlled user-driven reveal: the active feature changes with compact controls, not an auto-rotating carousel.
+- Use a controlled staggered reveal for the page, not an auto-rotating carousel or hidden feature state.
 - Preserve native Expo behavior, safe areas, reduced-motion support, and 44pt touch targets.
 - Keep the landing page credible and calm: vector marks, restrained surfaces, and short labels.
 
@@ -25,11 +25,11 @@ The reference is used for composition and energy only. HomeHearts will not copy 
 
 ## Approaches considered
 
-### 1. Interactive three-feature rail — selected
+### 1. Direct task chooser — selected
 
-One active feature preview appears beneath a short hero. Previous/next controls and labeled dots expose all three features without requiring swipe-only interaction. Each feature has a real route and a short contextual CTA.
+One primary action and two secondary actions appear beneath a short hero. All three capabilities are visible immediately, each has a real route, and each uses a short contextual description.
 
-This is the selected approach because it preserves the reference image’s sense of multiple app surfaces while keeping HomeHearts useful on the first tap.
+This is the selected approach because it preserves the reference image’s sense of distinct app surfaces while keeping HomeHearts understandable and useful on the first tap.
 
 ### 2. Scenario-first launch choices
 
@@ -41,52 +41,41 @@ Three intro slides would closely match the reference but would add friction befo
 
 ## Landing composition
 
-1. Small brand/location line.
-2. Short hero: “Find your next step.” with one supporting sentence.
-3. Feature rail with one large active preview card and a quiet layered edge treatment suggesting the other two surfaces.
-4. Compact controls: previous, feature position, next. Each control has an accessible label and the feature position is announced as selected.
-5. Dynamic primary CTA tied to the active feature:
-   - Find help → “Start with 3 questions” → `/intake`
-   - Compare paths → “Compare stay or move” → `/compare`
-   - Prepare to call → “Prepare a call” → `/plan` when a plan exists, otherwise `/intake`
-6. One-line trust note: “No account needed.”
-7. Existing saved-plan surface remains below the feature rail for returning users.
+1. HomeHearts mark, wordmark, and Dallas location pill.
+2. Short decision prompt: “What do you need right now?” with one supporting sentence.
+3. Primary branded card: “Find help now” → `/intake`, with “No account needed” as a confidence cue.
+4. Two compact secondary cards: “Compare costs” → `/compare`, and “Get ready to call” → `/plan` when a plan exists, otherwise `/intake`.
+5. A saved-plan continuation card for returning users, or a quiet local-save note for new users.
+6. A small trust note that clearly scopes the prototype without competing with the actions.
 
 ## Feature previews
 
-The previews are small native compositions, not fake screenshots:
-
-- Find help: a visual intake card with three short issue chips and a purple “matched help” status mark.
-- Compare paths: two compact cost metrics and a simple relative bar comparison.
-- Prepare to call: a checklist row, document mark, and call mark.
-
-Visible copy stays to labels and values. Full explanations remain on the destination screens.
+The action cards are small native compositions, not fake screenshots. They use the real HomeHearts brand mark, restrained functional colors, familiar icons, strong hierarchy, and short descriptions. Full explanations remain on the destination screens.
 
 ## Motion and interaction
 
-- On first render, the rail enters with a single opacity/translate reveal using the existing Reanimated `Reveal` pattern.
-- Changing the active feature uses a short fade/translate transition, approximately 220–280ms.
-- No automatic rotation; users control the state so the interaction does not interrupt reading.
-- `useReducedMotion()` renders the selected state immediately and skips non-essential transitions.
+- On first render, the header, prompt, actions, and continuation surfaces enter with a short staggered opacity/translate reveal using the existing Reanimated `Reveal` pattern.
 - Press feedback changes opacity only and never shifts layout.
+- No automatic rotation or swipe-only content; users see all important choices at once.
+- `useReducedMotion()` renders the selected state immediately and skips non-essential transitions.
 
 ## Architecture
 
-- Add a focused `HomeFeatureRail` native component in `src/components/homeLanding.tsx`.
+- Add a focused `HomeStartOptions` native component in `src/components/homeLanding.tsx`.
 - Keep feature metadata and route selection in the component as typed data, with a pure `getLandingFeature` helper exported for unit tests.
-- Reuse `VisualMark`, `MetricTile`, `IconRow`, `Button`, `Card`, `Reveal`, and the existing design tokens.
-- Update `app/(tabs)/index.tsx` to compose the rail and remove the static “Choose a path” duplication.
+- Reuse `BrandMark`, `IconRow`, `Card`, `Reveal`, Ionicons, and the existing design tokens.
+- Update `app/(tabs)/index.tsx` to compose the branded chooser and remove the generic “Choose a path” duplication.
 - Add unit tests for feature ordering, wraparound navigation, and the no-plan call CTA fallback.
 
 ## Confirmed behavior decisions
 
-- The landing page always opens on “Find help”; it does not persist the last selected feature.
+- The landing page always opens with “Find help now” as the primary action; it does not persist temporary landing UI state.
 - “Prepare to call” routes to the existing intake flow when no saved plan exists. No new intake context or state is added.
 
 ## Acceptance criteria
 
-- Home opens with a visible feature rail and a clear action within the first viewport at 375px width.
-- All three feature states are reachable by labeled controls without swiping.
+- Home opens with a visible HomeHearts identity and a clear action within the first viewport at 375px width.
+- All three product capabilities are visible as labeled, directly tappable choices without swiping.
 - Each state routes to an existing functional HomeHearts flow.
 - No visible landing copy requires more than a quick scan.
 - No content is hidden under the bottom tab bar or safe areas.

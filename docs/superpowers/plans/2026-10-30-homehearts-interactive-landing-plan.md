@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the static Home hero/action stack with a minimal interactive three-feature launch rail that routes into the existing HomeHearts flows.
+**Goal:** Replace the generic Home hero/action stack with a branded direct task chooser that routes into the existing HomeHearts flows.
 
-**Architecture:** Keep feature metadata and route fallback logic pure and independently testable in `src/components/homeLandingModel.ts`. Build a focused native `HomeFeatureRail` in `src/components/homeLanding.tsx` from existing tokenized `Button`, `Card`, `IconButton`, `HText`, `VisualMark`, `MetricTile`, and `CompactSurface` primitives, then compose it from the Home route. The rail owns only temporary selected-feature UI state; the store remains the source of saved-plan state.
+**Architecture:** Keep feature metadata and route fallback logic pure and independently testable in `src/components/homeLandingModel.ts`. Build a focused native `HomeStartOptions` in `src/components/homeLanding.tsx` from the brand mark, tokenized cards, HText, Ionicons, and existing design tokens, then compose it from the Home route. The chooser owns no business state; the store remains the source of saved-plan state.
 
 **Tech Stack:** Expo SDK 58, Expo Router, React Native, TypeScript, React Native Reanimated, Ionicons, Vitest.
 
@@ -12,12 +12,12 @@
 
 ## Global Constraints
 
-- Always open the rail on “Find help”; do not persist the last selected feature.
+- Always show “Find help now” as the primary action; do not persist temporary landing UI state.
 - “Prepare to call” routes to the existing intake flow when no saved plan exists.
 - Use only existing native Expo primitives and design tokens; do not add DOM-only 21st.dev or shadcn dependencies.
 - Keep visible landing copy short and preserve the existing functional routes.
 - Use vector icons, Pressable feedback, safe-area spacing, minimum 44pt controls, and reduced-motion handling.
-- No auto-rotating carousel and no generated photos or downloaded screenshots.
+- No carousel, hidden landing choices, generated photos, or downloaded screenshots.
 
 ## Review Focus
 
@@ -60,9 +60,9 @@
 
   Run: `npx vitest run src/components/homeLandingModel.test.ts`
 
-  Expected: PASS with 4 behavioral tests.
+  Expected: PASS with 5 behavioral tests.
 
-### Task 2: Native feature rail
+### Task 2: Native direct task chooser
 
 **Files:**
 - Create: `src/components/homeLanding.tsx`
@@ -70,25 +70,19 @@
 
 **Interfaces:**
 - Consumes the model exports from Task 1.
-- Produces `HomeFeatureRail({ hasPlan: boolean; onNavigate: (route: LandingRoute) => void })`.
+- Produces `HomeStartOptions({ hasPlan: boolean; onNavigate: (route: LandingRoute) => void })`.
 
-- [x] **Step 1: Implement the rail shell and selected-feature state**
+- [x] **Step 1: Implement the branded action hierarchy**
 
-  Start `activeIndex` at `0`. Render one active feature preview inside a bordered card with a small layered background treatment. Render previous/next `IconButton`s with labels `Previous landing feature` and `Next landing feature`, and three selected-state dot/tab controls with labels containing the feature title and position.
+  Render one primary “Find help now” action and two secondary actions (“Compare costs” and “Get ready to call”) as visible cards. Keep the primary action visually dominant without requiring a carousel or hidden state.
 
-- [x] **Step 2: Implement the three compact previews**
+- [x] **Step 2: Implement the compact task cards**
 
-  Keep each preview visual-first and short:
+  Use the HomeHearts mark, familiar Ionicons, short descriptions, functional color families, and clear arrow affordances. Do not use photos, gradients, emojis, or unsupported DOM components.
 
-  - Help: `VisualMark` plus three issue chips and a matched-help status row.
-  - Compare: two `MetricTile`s and a restrained horizontal comparison bar.
-  - Call: a checklist row, document icon, and call icon.
+- [x] **Step 3: Add motion and route behavior**
 
-  Use existing `colors`, `radii`, `spacing`, `HText`, `CompactSurface`, and Ionicons. Do not use photos, gradients, emojis, or unsupported DOM components.
-
-- [x] **Step 3: Add motion and CTA behavior**
-
-  Use the existing reduced-motion hook and Reanimated opacity/translate entrance for the active preview. Render the dynamic CTA label and call `onNavigate(getLandingRoute(feature.id, hasPlan))`. Keep the state user-controlled; do not add an interval or auto-rotation.
+  Use the existing staggered `Reveal` treatment around the page sections. Each card calls `onNavigate(getLandingRoute(feature.id, hasPlan))`; do not add an interval or hidden selection state.
 
 - [x] **Step 4: Run typecheck**
 
@@ -102,11 +96,11 @@
 - Modify: `app/(tabs)/index.tsx`
 
 **Interfaces:**
-- Consumes `HomeFeatureRail` from Task 2 and `savedPlanProgramId` from the existing store.
+- Consumes `HomeStartOptions` from Task 2 and `savedPlanProgramId` from the existing store.
 
-- [x] **Step 1: Replace the static hero/action duplication**
+- [x] **Step 1: Replace the generic hero/action duplication**
 
-  Keep the brand/location line, short hero title, trust line, and saved-plan continuation card. Remove the static “Choose a path” heading, two-card action grid, and redundant step rail. Place `HomeFeatureRail` directly under the short hero copy so the first viewport leads with the interactive product preview.
+  Keep the brand/location line, short decision prompt, trust line, and saved-plan continuation card. Remove the generic “Choose a path” language and redundant step rail. Place `HomeStartOptions` directly under the prompt so the first viewport leads with real product actions.
 
 - [x] **Step 2: Wire route navigation**
 
@@ -130,13 +124,15 @@
 
   Run: `npx expo export --platform web`
 
-  Run: `npx expo export --platform ios && npx expo export --platform android`
+  Run: `npx expo export --platform ios`
+
+  Run: `npx expo export --platform android`
 
   Expected: all commands exit 0; Vitest reports all test files passing; native and web bundles complete.
 
 - [x] **Step 2: Run the live visual audit**
 
-  Inspect Home, then activate each feature and verify its destination route. Check the initial reveal, previous/next controls, selected dot state, reduced-motion-safe static state, and saved-plan CTA fallback.
+  Inspect Home, then activate each visible action and verify its destination route. Check the initial reveal, phone spacing, action hierarchy, reduced-motion-safe static state, and saved-plan CTA fallback.
 
 - [x] **Step 3: Ask a fresh reviewer to inspect the completed change**
 
@@ -146,7 +142,7 @@
 
   ```bash
   git add app/(tabs)/index.tsx src/components/homeLanding.tsx src/components/homeLandingModel.ts src/components/homeLandingModel.test.ts docs/superpowers/specs/2026-10-30-homehearts-interactive-landing-design.md docs/superpowers/plans/2026-10-30-homehearts-interactive-landing-plan.md
-  git commit -m "feat: add interactive HomeHearts landing rail"
+  git commit -m "feat: redesign HomeHearts landing with direct task chooser"
   ```
 
   Keep the baseline commit `735372f` on `origin/main` as the rollback point unless the user explicitly asks to push the redesign.

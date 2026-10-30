@@ -1,7 +1,7 @@
 export type LandingFeatureId = 'help' | 'compare' | 'call';
 export type LandingRoute = '/intake' | '/compare' | '/plan';
 export type LandingFeatureTone = 'purple' | 'coral' | 'success';
-export type LandingFeatureIcon = 'sparkles-outline' | 'analytics-outline' | 'call-outline';
+export type LandingFeatureIcon = 'heart-outline' | 'analytics-outline' | 'call-outline';
 
 export type LandingFeature = {
   id: LandingFeatureId;
@@ -14,9 +14,9 @@ export type LandingFeature = {
 };
 
 export const LANDING_FEATURES: readonly LandingFeature[] = [
-  { id: 'help', tone: 'purple', icon: 'sparkles-outline', eyebrow: 'FIND HELP', title: 'Start with what’s happening.', detail: 'A few questions, then local options.', cta: 'Start with 3 questions' },
-  { id: 'compare', tone: 'coral', icon: 'analytics-outline', eyebrow: 'COMPARE PATHS', title: 'See the cost of staying or moving.', detail: 'Put the next few months side by side.', cta: 'Compare stay or move' },
-  { id: 'call', tone: 'success', icon: 'call-outline', eyebrow: 'PREPARE TO CALL', title: 'Know what to ask next.', detail: 'Keep your plan, documents, and questions together.', cta: 'Prepare a call' },
+  { id: 'help', tone: 'purple', icon: 'heart-outline', eyebrow: 'START HERE', title: 'Find help now', detail: 'Three questions to find Dallas options.', cta: 'Find help now' },
+  { id: 'compare', tone: 'coral', icon: 'analytics-outline', eyebrow: 'COMPARE COSTS', title: 'Compare costs', detail: 'See staying and moving side by side.', cta: 'Compare costs' },
+  { id: 'call', tone: 'success', icon: 'call-outline', eyebrow: 'GET READY', title: 'Get ready to call', detail: 'Keep your plan and questions together.', cta: 'Open my plan' },
 ];
 
 export function getLandingFeature(index: number): LandingFeature {

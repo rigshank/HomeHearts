@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { PropsWithChildren } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { colors, radii, spacing } from '../design/tokens';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { colors, radii, shadows, spacing } from '../design/tokens';
 import { HText } from './ui';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 type VisualTone = 'purple' | 'coral' | 'success' | 'neutral';
+const BRAND_MARK = require('../../assets/android-icon-foreground.png');
 
 const toneMap: Record<VisualTone, { icon: string; wash: string; line: string }> = {
   purple: { icon: colors.primary, wash: colors.primarySoft, line: colors.primary },
@@ -13,6 +14,11 @@ const toneMap: Record<VisualTone, { icon: string; wash: string; line: string }> 
   success: { icon: colors.success, wash: colors.successSoft, line: colors.success },
   neutral: { icon: colors.mutedStrong, wash: colors.surfaceMuted, line: colors.mutedStrong },
 };
+
+export function BrandMark({ size = 'medium' }: { size?: 'small' | 'medium' | 'large' }) {
+  const dimension = size === 'small' ? 44 : size === 'medium' ? 58 : 76;
+  return <View accessible={false} style={[styles.brandMark, { width: dimension, height: dimension, borderRadius: dimension * 0.3 }]}><Image accessible={false} source={BRAND_MARK} resizeMode="contain" style={{ width: dimension * 0.82, height: dimension * 0.82 }} /></View>;
+}
 
 export function VisualMark({ icon, tone = 'purple', size = 'large', label }: { icon: IconName; tone?: VisualTone; size?: 'small' | 'medium' | 'large'; label?: string }) {
   const dimension = size === 'small' ? 44 : size === 'medium' ? 56 : 72;
@@ -46,5 +52,5 @@ export function VisualAction({ icon, title, detail, tone = 'purple', onPress }: 
 }
 
 const styles = StyleSheet.create({
-  mark: { borderWidth: 1, alignItems: 'center', justifyContent: 'center' }, metricTile: { flex: 1, minHeight: 86, borderRadius: radii.md, padding: spacing.sm, gap: 4, backgroundColor: colors.surface, borderWidth: 1, borderTopWidth: 3, borderColor: colors.border }, iconRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm }, rowIcon: { width: 38, height: 38, borderRadius: 13, backgroundColor: colors.surfaceMuted, alignItems: 'center', justifyContent: 'center' }, rowCopy: { flex: 1, gap: 2 }, stepRail: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: spacing.xs }, stepItem: { alignItems: 'center', gap: 6, flex: 1 }, stepIcon: { width: 34, height: 34, borderRadius: 12, backgroundColor: colors.surfaceMuted, alignItems: 'center', justifyContent: 'center' }, stepLabel: { textAlign: 'center' }, stepLine: { height: 1, flex: 0.45, backgroundColor: colors.border, marginBottom: 21 }, compactSurface: { borderRadius: radii.md, padding: spacing.md }, visualAction: { flex: 1, minHeight: 124, borderRadius: radii.lg, padding: spacing.md, gap: spacing.xs, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }, actionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xs }, actionIcon: { width: 36, height: 36, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' }, pressed: { opacity: 0.78 },
+  brandMark: { backgroundColor: '#E6F4FE', borderWidth: 1, borderColor: colors.brandBorder, alignItems: 'center', justifyContent: 'center', ...shadows.card }, mark: { borderWidth: 1, alignItems: 'center', justifyContent: 'center' }, metricTile: { flex: 1, minHeight: 86, borderRadius: radii.md, padding: spacing.sm, gap: 4, backgroundColor: colors.surface, borderWidth: 1, borderTopWidth: 3, borderColor: colors.border }, iconRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm }, rowIcon: { width: 38, height: 38, borderRadius: 13, backgroundColor: colors.surfaceMuted, alignItems: 'center', justifyContent: 'center' }, rowCopy: { flex: 1, gap: 2 }, stepRail: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: spacing.xs }, stepItem: { alignItems: 'center', gap: 6, flex: 1 }, stepIcon: { width: 34, height: 34, borderRadius: 12, backgroundColor: colors.surfaceMuted, alignItems: 'center', justifyContent: 'center' }, stepLabel: { textAlign: 'center' }, stepLine: { height: 1, flex: 0.45, backgroundColor: colors.border, marginBottom: 21 }, compactSurface: { borderRadius: radii.md, padding: spacing.md }, visualAction: { flex: 1, minHeight: 124, borderRadius: radii.lg, padding: spacing.md, gap: spacing.xs, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }, actionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xs }, actionIcon: { width: 36, height: 36, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' }, pressed: { opacity: 0.78 },
 });
