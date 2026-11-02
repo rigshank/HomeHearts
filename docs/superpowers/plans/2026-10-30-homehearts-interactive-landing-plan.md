@@ -18,10 +18,12 @@
 - Keep visible landing copy short and preserve the existing functional routes.
 - Use vector icons, Pressable feedback, safe-area spacing, minimum 44pt controls, and reduced-motion handling.
 - No carousel, hidden landing choices, generated photos, or downloaded screenshots.
+- Stack the secondary action cards at widths through 430pt; use the split layout only beyond the phone range.
 
 ## Review Focus
 
 - Narrow phone width: the active preview, controls, CTA, and trust line must fit without horizontal overflow. Test in `homeLandingModel.test.ts` for state logic and verify visually at 375px.
+- Phone action layout: 375pt, 393pt, and 430pt must resolve to the stacked layout; 431pt and wider may resolve to the split layout.
 - No saved plan: the call feature must route to `/intake`, not `/plan`. Pin this in `homeLandingModel.test.ts`.
 - Wraparound controls: previous from the first feature and next from the last must stay within the three-feature set. Pin this in `homeLandingModel.test.ts`.
 - Reduced motion: the component must skip the entrance transition when `useReducedMotion()` is true. Verify by code inspection and native/web export.
@@ -35,6 +37,7 @@
 
 **Interfaces:**
 - Produces `LandingFeatureId`, `LandingRoute`, `LANDING_FEATURES`, `getLandingFeature(index: number)`, and `getLandingRoute(featureId: LandingFeatureId, hasPlan: boolean)` for the UI component and Home route.
+- Produces `getLandingActionLayout(width: number)` so responsive behavior is deterministic and unit-tested.
 
 - [x] **Step 1: Write the failing model tests**
 
@@ -108,7 +111,7 @@
 
 - [x] **Step 3: Inspect layout at phone widths**
 
-  Run the Expo web preview and inspect Home at 375px and a wider tablet-like width. Confirm no clipped feature labels, no horizontal overflow, no content behind the tab bar, and a visible first action without excessive copy.
+  Run the Expo web preview and inspect Home at 375px and a wider tablet-like width. Confirm the phone layout stacks secondary actions, no clipped feature labels, no horizontal overflow, no content behind the tab bar, and a visible first action without excessive copy.
 
 ### Task 4: Full verification and review
 

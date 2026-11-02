@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { usePathname, useRouter } from 'expo-router';
 import React, { PropsWithChildren, ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
-import Animated, { FadeInDown, useAnimatedStyle, useReducedMotion, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radii, shadows, spacing, typography } from '../design/tokens';
 
@@ -94,12 +94,6 @@ export function TabBar() {
     { path: '/(tabs)/plan', label: 'My plan', icon: 'checkbox-outline', activeIcon: 'checkbox' },
   ];
   return <View style={[styles.tabBar, { paddingBottom: Math.max(4, insets.bottom) }]}>{tabs.map((tab) => { const tabPath = tab.path === '/(tabs)' ? '/' : tab.path.replace('/(tabs)', ''); const active = normalizedPath === tabPath || (tabPath !== '/' && normalizedPath.startsWith(tabPath)); return <Pressable accessibilityRole="tab" accessibilityState={{ selected: active }} accessibilityLabel={tab.label} key={tab.path} onPress={() => router.replace(tab.path)} style={({ pressed }) => [styles.tabItem, pressed && styles.buttonPressed]}><Ionicons accessible={false} aria-hidden name={active ? tab.activeIcon : tab.icon} size={22} color={active ? colors.primary : colors.muted} /><HText variant="micro" color={active ? colors.primary : colors.muted}>{tab.label}</HText></Pressable>; })}</View>;
-}
-
-export function useSpringPress() {
-  const scale = useSharedValue(1);
-  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  return { animatedStyle, pressIn: () => { scale.value = withSpring(0.97); }, pressOut: () => { scale.value = withSpring(1); } };
 }
 
 const styles = StyleSheet.create({

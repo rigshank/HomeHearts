@@ -3,15 +3,15 @@ import React from 'react';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { colors, radii, shadows, spacing } from '../design/tokens';
 import { HText } from './ui';
-import { LANDING_FEATURES, LandingFeature, LandingRoute, getLandingRoute } from './homeLandingModel';
+import { getLandingActionLayout, getLandingOptionCopy, LANDING_FEATURES, LandingFeature, LandingRoute, getLandingRoute } from './homeLandingModel';
 
 export function HomeStartOptions({ hasPlan, onNavigate }: { hasPlan: boolean; onNavigate: (route: LandingRoute) => void }) {
   const { width } = useWindowDimensions();
-  const narrow = width < 390;
+  const narrow = getLandingActionLayout(width) === 'stacked';
   const [help, compare, call] = LANDING_FEATURES;
   return <View style={styles.options}>
     <StartOption feature={help} primary onPress={() => onNavigate(getLandingRoute(help.id, hasPlan))} />
-    <HText variant="micro" color={colors.muted} style={styles.orLabel}>OR START WITH</HText>
+    <HText variant="micro" color={colors.muted} style={styles.orLabel}>OR USE A TOOL</HText>
     <View style={[styles.secondaryGrid, narrow && styles.secondaryStack]}>
       <StartOption feature={compare} onPress={() => onNavigate(getLandingRoute(compare.id, hasPlan))} />
       <StartOption feature={call} hasPlan={hasPlan} onPress={() => onNavigate(getLandingRoute(call.id, hasPlan))} />
@@ -20,9 +20,7 @@ export function HomeStartOptions({ hasPlan, onNavigate }: { hasPlan: boolean; on
 }
 
 function StartOption({ feature, primary = false, hasPlan = false, onPress }: { feature: LandingFeature; primary?: boolean; hasPlan?: boolean; onPress: () => void }) {
-  const isCallWithoutPlan = feature.id === 'call' && !hasPlan;
-  const title = isCallWithoutPlan ? 'Start your plan' : feature.title;
-  const detail = isCallWithoutPlan ? 'Answer a few questions first.' : feature.detail;
+  const { title, detail } = getLandingOptionCopy(feature.id, hasPlan);
   const footer = primary ? 'NO ACCOUNT NEEDED' : feature.id === 'call' && hasPlan ? 'OPEN MY PLAN' : 'START WITH INTAKE';
   const palette = feature.id === 'help'
     ? { background: colors.brandSoft, border: colors.brandBorder, icon: colors.brand, iconBackground: colors.white, text: colors.ink, muted: colors.mutedStrong }
@@ -46,8 +44,8 @@ const styles = StyleSheet.create({
   secondaryGrid: { flexDirection: 'row', gap: spacing.sm },
   secondaryStack: { flexDirection: 'column' },
   option: { borderWidth: 1, borderRadius: radii.xl, padding: spacing.md, gap: spacing.xs, ...shadows.card },
-  primaryOption: { minHeight: 148 },
-  secondaryOption: { flex: 1, minHeight: 112 },
+  primaryOption: { minHeight: 136 },
+  secondaryOption: { flex: 1, minHeight: 100 },
   pressed: { opacity: 0.82 },
   optionTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.xs },
   optionIcon: { width: 48, height: 48, borderRadius: 16, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },

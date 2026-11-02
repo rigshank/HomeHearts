@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getLandingFeature, getLandingRoute, LANDING_FEATURES } from './homeLandingModel';
+import { getLandingActionLayout, getLandingFeature, getLandingOptionCopy, getLandingRoute, LANDING_FEATURES } from './homeLandingModel';
 
 describe('HomeHearts landing feature model', () => {
   it('keeps the landing features in help, compare, call order', () => {
@@ -8,6 +8,17 @@ describe('HomeHearts landing feature model', () => {
 
   it('uses direct task language for the three starting points', () => {
     expect(LANDING_FEATURES.map((feature) => feature.title)).toEqual(['Find help now', 'Compare costs', 'Get ready to call']);
+  });
+
+  it('stacks landing actions through common phone widths', () => {
+    expect(getLandingActionLayout(375)).toBe('stacked');
+    expect(getLandingActionLayout(430)).toBe('stacked');
+    expect(getLandingActionLayout(431)).toBe('split');
+  });
+
+  it('labels the call action according to saved-plan state', () => {
+    expect(getLandingOptionCopy('call', false)).toEqual({ title: 'Start your plan', detail: 'Answer a few questions first.' });
+    expect(getLandingOptionCopy('call', true)).toEqual({ title: 'Open my plan', detail: 'Continue your saved next steps.' });
   });
 
   it('wraps previous and next feature indexes', () => {

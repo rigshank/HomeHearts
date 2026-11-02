@@ -14,6 +14,7 @@ The reference is used for composition and energy only. HomeHearts will not copy 
 - Use a controlled staggered reveal for the page, not an auto-rotating carousel or hidden feature state.
 - Preserve native Expo behavior, safe areas, reduced-motion support, and 44pt touch targets.
 - Keep the landing page credible and calm: vector marks, restrained surfaces, and short labels.
+- Stack secondary actions through 430pt so common iPhone widths never compress the action cards into unreadable columns.
 
 ## Non-goals
 
@@ -44,7 +45,7 @@ Three intro slides would closely match the reference but would add friction befo
 1. HomeHearts mark, wordmark, and Dallas location pill.
 2. Short decision prompt: “What do you need right now?” with one supporting sentence.
 3. Primary branded card: “Find help now” → `/intake`, with “No account needed” as a confidence cue.
-4. Two compact secondary cards: “Compare costs” → `/compare`, and “Get ready to call” → `/plan` when a plan exists, otherwise `/intake`.
+4. Two compact secondary cards: “Compare costs” → `/compare`, and “Start your plan” → `/intake` for new users or “Open my plan” → `/plan` for returning users.
 5. A saved-plan continuation card for returning users, or a quiet local-save note for new users.
 6. A small trust note that clearly scopes the prototype without competing with the actions.
 
@@ -64,6 +65,7 @@ The action cards are small native compositions, not fake screenshots. They use t
 - Add a focused `HomeStartOptions` native component in `src/components/homeLanding.tsx`.
 - Keep feature metadata and route selection in the component as typed data, with a pure `getLandingFeature` helper exported for unit tests.
 - Reuse `BrandMark`, `IconRow`, `Card`, `Reveal`, Ionicons, and the existing design tokens.
+- Keep the phone/tablet action breakpoint pure and testable with `getLandingActionLayout` in `src/components/homeLandingModel.ts`.
 - Update `app/(tabs)/index.tsx` to compose the branded chooser and remove the generic “Choose a path” duplication.
 - Add unit tests for feature ordering, wraparound navigation, and the no-plan call CTA fallback.
 
@@ -76,6 +78,7 @@ The action cards are small native compositions, not fake screenshots. They use t
 
 - Home opens with a visible HomeHearts identity and a clear action within the first viewport at 375px width.
 - All three product capabilities are visible as labeled, directly tappable choices without swiping.
+- At 375pt, 393pt, and 430pt, secondary actions stack with no clipped titles or descriptions; wider tablet layouts may use two columns.
 - Each state routes to an existing functional HomeHearts flow.
 - No visible landing copy requires more than a quick scan.
 - No content is hidden under the bottom tab bar or safe areas.
