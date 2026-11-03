@@ -3,10 +3,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { Button, Card, FloatingBack, HText, Pill, Reveal, Screen, SectionHeading, StatusBadge } from '../../src/components/ui';
-import { colors, radii, spacing } from '../../src/design/tokens';
+import { colors, spacing } from '../../src/design/tokens';
 import { DALLAS_PROGRAMS } from '../../src/data/programs';
 import { DOCUMENT_LABELS } from '../../src/domain/types';
-import { useHomeHeartsStore } from '../../src/state/useHomeHeartsStore';
 import { MetricTile, VisualMark } from '../../src/components/visuals';
 
 export default function ProgramDetailScreen() {

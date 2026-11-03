@@ -4,7 +4,9 @@ export type LandingFeatureTone = 'purple' | 'coral' | 'success';
 export type LandingFeatureIcon = 'heart-outline' | 'analytics-outline' | 'call-outline';
 export type LandingActionLayout = 'stacked' | 'split';
 
-export const PHONE_ACTION_BREAKPOINT = 430;
+// Keep the compact dashboard grid on normal 375pt phones. Stack only on the
+// narrowest devices where two cards would make the tap targets too cramped.
+export const PHONE_ACTION_BREAKPOINT = 360;
 
 export type LandingFeature = {
   id: LandingFeatureId;
@@ -17,15 +19,15 @@ export type LandingFeature = {
 };
 
 export const LANDING_FEATURES: readonly LandingFeature[] = [
-  { id: 'help', tone: 'purple', icon: 'heart-outline', eyebrow: 'START HERE', title: 'Find help now', detail: 'Three questions to find Dallas options.', cta: 'Find help now' },
-  { id: 'compare', tone: 'coral', icon: 'analytics-outline', eyebrow: 'COMPARE COSTS', title: 'Compare costs', detail: 'See stay and move side by side.', cta: 'Compare costs' },
-  { id: 'call', tone: 'success', icon: 'call-outline', eyebrow: 'GET READY', title: 'Get ready to call', detail: 'Keep questions ready for a call.', cta: 'Open my plan' },
+  { id: 'help', tone: 'purple', icon: 'heart-outline', eyebrow: 'START HERE', title: 'Find help now', detail: 'Three questions. Dallas leads.', cta: 'Find help now' },
+  { id: 'compare', tone: 'coral', icon: 'analytics-outline', eyebrow: 'COMPARE COSTS', title: 'Compare costs', detail: 'See stay vs. move.', cta: 'Compare costs' },
+  { id: 'call', tone: 'success', icon: 'call-outline', eyebrow: 'GET READY', title: 'Get ready to call', detail: 'Keep your next step ready.', cta: 'Open my plan' },
 ];
 
 export function getLandingOptionCopy(featureId: LandingFeatureId, hasPlan: boolean): Pick<LandingFeature, 'title' | 'detail'> {
   const feature = LANDING_FEATURES.find((item) => item.id === featureId);
   if (!feature) throw new Error(`Unknown landing feature: ${featureId}`);
-  if (featureId === 'call') return hasPlan ? { title: 'Open my plan', detail: 'Continue your saved next steps.' } : { title: 'Start your plan', detail: 'Answer a few questions first.' };
+  if (featureId === 'call') return { title: 'Open my plan', detail: hasPlan ? 'Pick up your next step.' : 'See your next steps.' };
   return { title: feature.title, detail: feature.detail };
 }
 
@@ -41,5 +43,5 @@ export function getLandingFeature(index: number): LandingFeature {
 export function getLandingRoute(featureId: LandingFeatureId, hasPlan: boolean): LandingRoute {
   if (featureId === 'help') return '/intake';
   if (featureId === 'compare') return '/compare';
-  return hasPlan ? '/plan' : '/intake';
+  return '/plan';
 }

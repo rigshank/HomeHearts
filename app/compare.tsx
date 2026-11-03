@@ -2,8 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Button, Card, Field, FloatingBack, HText, OptionButton, Pill, Reveal, Screen, SectionHeading } from '../src/components/ui';
-import { colors, radii, spacing } from '../src/design/tokens';
+import { Card, Field, FloatingBack, HText, OptionButton, Pill, Reveal, Screen, SectionHeading } from '../src/components/ui';
+import { colors, spacing } from '../src/design/tokens';
 import { calculateComparison, formatCurrency } from '../src/domain/cost';
 import { useHomeHeartsStore } from '../src/state/useHomeHeartsStore';
 import { MetricTile, VisualMark } from '../src/components/visuals';
@@ -16,7 +16,74 @@ export default function CompareScreen() {
   const updateDraft = (key: keyof typeof drafts, value: string) => setDrafts((current) => ({ ...current, [key]: value }));
   const commit = (key: keyof typeof drafts) => { const centsKey = { stay: 'monthlyStayCents', afterIncrease: 'monthlyStayAfterIncreaseCents', upfront: 'movingUpfrontCents', movingMonthly: 'movingMonthlyCents' }[key] as keyof typeof comparison; setComparison({ [centsKey]: parseMoney(drafts[key]) }); };
   const result = calculateComparison(comparison);
-  return <Screen><View style={styles.nav}><FloatingBack /></View><Reveal><View style={styles.titleRow}><VisualMark icon="bar-chart-outline" size="small" label="Cost comparison" /><View style={styles.titleCopy}><HText variant="micro" color={colors.primary}>TRUE COST</HText><HText variant="title" style={styles.title}>Stay or move?</HText></View></View><HText variant="body" color={colors.muted}>Compare your numbers. You decide.</HText></Reveal><Reveal index={1}><View style={styles.horizonRow}><OptionButton title="3 months" selected={comparison.horizonMonths === 3} onPress={() => setComparison({ horizonMonths: 3 })} /><OptionButton title="12 months" selected={comparison.horizonMonths === 12} onPress={() => setComparison({ horizonMonths: 12 })} /></View></Reveal><Reveal index={2}><Card style={styles.inputCard}><SectionHeading eyebrow="YOUR NUMBERS" title="What should we compare?" /><Field label="Rent now" keyboardType="decimal-pad" value={drafts.stay} onChangeText={(value) => updateDraft('stay', value)} onBlur={() => commit('stay')} /><Field label="Rent after increase" helper="Use the new rent from your notice." keyboardType="decimal-pad" value={drafts.afterIncrease} onChangeText={(value) => updateDraft('afterIncrease', value)} onBlur={() => commit('afterIncrease')} /><Field label="Move-up cost" helper="Deposit, movers, and fees." keyboardType="decimal-pad" value={drafts.upfront} onChangeText={(value) => updateDraft('upfront', value)} onBlur={() => commit('upfront')} /><Field label="Monthly cost after move" keyboardType="decimal-pad" value={drafts.movingMonthly} onChangeText={(value) => updateDraft('movingMonthly', value)} onBlur={() => commit('movingMonthly')} /></Card></Reveal><Reveal index={3}><Card style={styles.resultCard}><View style={styles.resultTop}><View><HText variant="caption" color={colors.muted}>AFTER {comparison.horizonMonths} MONTHS</HText><HText variant="title">{formatCurrency(result.stayTotalCents)}</HText><HText variant="caption" color={colors.muted}>if you stay</HText></View><Pill tone={result.moveTotalCents < result.stayTotalCents ? 'success' : 'coral'}>{result.moveTotalCents < result.stayTotalCents ? 'Move is lower' : 'Stay is lower'}</Pill></View><MiniChart result={result} /><View style={styles.metrics}><MetricTile icon="home-outline" label="Stay" value={formatCurrency(result.stayTotalCents)} /><MetricTile icon="navigate-outline" label="Move" value={formatCurrency(result.moveTotalCents)} tone="coral" /><MetricTile icon="time-outline" label="Break-even" value={result.breakEvenMonth ? `Month ${result.breakEvenMonth}` : 'Not in range'} tone="neutral" /></View>{result.warnings.map((warning) => <View style={styles.warning} key={warning}><Ionicons name="information-circle-outline" size={16} color={colors.warning} /><HText variant="caption" color={colors.warning}>{warning}</HText></View>)}</Card></Reveal><SectionHeading eyebrow="NEXT STEP" title="Get support" /><Reveal index={4}><View style={styles.nextGrid}><Card tone="purple" style={styles.nextCard} onPress={() => { useHomeHeartsStore.getState().setIntake({ issue: 'rent_increase' }); router.push('/intake'); }}><Ionicons name="home-outline" size={22} color={colors.primary} /><HText variant="bodyStrong">Help to stay</HText><HText variant="caption" color={colors.muted}>Rent, utility, or legal help.</HText></Card><Card tone="coral" style={styles.nextCard} onPress={() => { useHomeHeartsStore.getState().setIntake({ issue: 'moving' }); router.push('/intake'); }}><Ionicons name="navigate-outline" size={22} color={colors.coral} /><HText variant="bodyStrong">Help to move</HText><HText variant="caption" color={colors.muted}>Deposits and housing leads.</HText></Card></View></Reveal></Screen>;
+  return <Screen>
+    <View style={styles.nav}><FloatingBack /></View>
+    <Reveal>
+      <View style={styles.titleRow}>
+        <VisualMark icon="bar-chart-outline" size="small" label="Cost comparison" />
+        <View style={styles.titleCopy}>
+          <HText variant="micro" color={colors.primary}>TRUE COST</HText>
+          <HText variant="title" style={styles.title}>Stay or move?</HText>
+        </View>
+      </View>
+      <HText variant="body" color={colors.muted}>Compare your numbers. You decide.</HText>
+    </Reveal>
+    <Reveal index={1}>
+      <View style={styles.horizonSection}>
+        <View style={styles.horizonHeading}>
+          <HText variant="micro" color={colors.primary}>COMPARE HORIZON</HText>
+          <HText variant="caption" color={colors.muted}>Choose a time range.</HText>
+        </View>
+        <View style={styles.horizonRow}>
+          <OptionButton style={styles.horizonOption} title="3 months" description="Near-term" accessibilityLabel="Compare costs over 3 months" selected={comparison.horizonMonths === 3} onPress={() => setComparison({ horizonMonths: 3 })} />
+          <OptionButton style={styles.horizonOption} title="12 months" description="Full-year" accessibilityLabel="Compare costs over 12 months" selected={comparison.horizonMonths === 12} onPress={() => setComparison({ horizonMonths: 12 })} />
+        </View>
+      </View>
+    </Reveal>
+    <Reveal index={2}>
+      <Card style={styles.inputCard}>
+        <SectionHeading eyebrow="YOUR NUMBERS" title="What should we compare?" />
+        <Field label="Rent now" keyboardType="decimal-pad" value={drafts.stay} onChangeText={(value) => updateDraft('stay', value)} onBlur={() => commit('stay')} />
+        <Field label="Rent after increase" helper="Use the new rent from your notice." keyboardType="decimal-pad" value={drafts.afterIncrease} onChangeText={(value) => updateDraft('afterIncrease', value)} onBlur={() => commit('afterIncrease')} />
+        <Field label="Move-up cost" helper="Deposit, movers, and fees." keyboardType="decimal-pad" value={drafts.upfront} onChangeText={(value) => updateDraft('upfront', value)} onBlur={() => commit('upfront')} />
+        <Field label="Monthly cost after move" keyboardType="decimal-pad" value={drafts.movingMonthly} onChangeText={(value) => updateDraft('movingMonthly', value)} onBlur={() => commit('movingMonthly')} />
+      </Card>
+    </Reveal>
+    <Reveal index={3}>
+      <Card style={styles.resultCard}>
+        <View style={styles.resultTop}>
+          <View>
+            <HText variant="caption" color={colors.muted}>AFTER {comparison.horizonMonths} MONTHS</HText>
+            <HText variant="title">{formatCurrency(result.stayTotalCents)}</HText>
+            <HText variant="caption" color={colors.muted}>if you stay</HText>
+          </View>
+          <Pill tone={result.moveTotalCents < result.stayTotalCents ? 'success' : 'coral'}>{result.moveTotalCents < result.stayTotalCents ? 'Move is lower' : 'Stay is lower'}</Pill>
+        </View>
+        <MiniChart result={result} />
+        <View style={styles.metrics}>
+          <MetricTile icon="home-outline" label="Stay" value={formatCurrency(result.stayTotalCents)} />
+          <MetricTile icon="navigate-outline" label="Move" value={formatCurrency(result.moveTotalCents)} tone="coral" />
+          <MetricTile icon="time-outline" label="Break-even" value={result.breakEvenMonth ? `Month ${result.breakEvenMonth}` : 'Not in range'} tone="neutral" />
+        </View>
+        {result.warnings.map((warning) => <View style={styles.warning} key={warning}><Ionicons name="information-circle-outline" size={16} color={colors.warning} /><HText variant="caption" color={colors.warning}>{warning}</HText></View>)}
+      </Card>
+    </Reveal>
+    <SectionHeading eyebrow="NEXT STEP" title="Get support" />
+    <Reveal index={4}>
+      <View style={styles.nextGrid}>
+        <Card tone="purple" style={styles.nextCard} pressableStyle={styles.nextCardPressable} onPress={() => { useHomeHeartsStore.getState().setIntake({ issue: 'rent_increase' }); router.push('/intake'); }}>
+          <Ionicons accessible={false} aria-hidden name="home-outline" size={22} color={colors.primary} />
+          <HText variant="bodyStrong">Help to stay</HText>
+          <HText variant="caption" color={colors.muted}>Rent, utility, or legal help.</HText>
+        </Card>
+        <Card tone="coral" style={styles.nextCard} pressableStyle={styles.nextCardPressable} onPress={() => { useHomeHeartsStore.getState().setIntake({ issue: 'moving' }); router.push('/intake'); }}>
+          <Ionicons accessible={false} aria-hidden name="navigate-outline" size={22} color={colors.coral} />
+          <HText variant="bodyStrong">Help to move</HText>
+          <HText variant="caption" color={colors.muted}>Deposits and housing leads.</HText>
+        </Card>
+      </View>
+    </Reveal>
+  </Screen>;
 }
 
 function parseMoney(value: string) { const parsed = Number(value.replace(/[^0-9.]/g, '')); return Number.isFinite(parsed) ? Math.max(0, Math.round(parsed * 100)) : 0; }
@@ -27,6 +94,34 @@ function MiniChart({ result }: { result: ReturnType<typeof calculateComparison> 
   return <View style={styles.chart} accessibilityLabel="Cost comparison chart"><View style={styles.chartLegend}><View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.primary }]} /><HText variant="caption" color={colors.muted}>Stay</HText></View><View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.coral }]} /><HText variant="caption" color={colors.muted}>Move</HText></View></View><View style={styles.scale}><HText variant="micro" color={colors.muted}>$0</HText><HText variant="micro" color={colors.muted}>{formatCurrency(max)}</HText></View><View style={styles.bars}>{points.map((point) => <View style={styles.barGroup} key={point.month}><View style={styles.barPair}><View style={[styles.bar, { height: Math.max(8, (point.stayCents / max) * 122), backgroundColor: colors.primary }]} /><View style={[styles.bar, { height: Math.max(8, (point.moveCents / max) * 122), backgroundColor: colors.coral }]} /></View><HText variant="micro" color={colors.muted}>M{point.month}</HText></View>)}</View><View style={styles.axis}><HText variant="micro" color={colors.muted}>TOTAL COST</HText><HText variant="micro" color={colors.muted}>HORIZON →</HText></View><View style={styles.dataTable}>{points.map((point) => <View style={styles.dataRow} key={`row-${point.month}`}><HText variant="caption" color={colors.muted}>Month {point.month}</HText><HText variant="caption" color={colors.primary}>{formatCurrency(point.stayCents)}</HText><HText variant="caption" color={colors.coral}>{formatCurrency(point.moveCents)}</HText></View>)}</View></View>;
 }
 
-const styles = StyleSheet.create({ nav: { marginBottom: spacing.lg }, titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm }, titleCopy: { flex: 1, gap: 2 }, title: { marginTop: spacing.xs, marginBottom: spacing.sm }, horizonRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xl, marginBottom: spacing.lg }, inputCard: { gap: spacing.xs, marginBottom: spacing.lg }, resultCard: { marginBottom: spacing.xxl, gap: spacing.md }, resultTop: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.sm }, metrics: { flexDirection: 'row', gap: spacing.xs }, chart: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md }, chartLegend: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.sm }, legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 }, legendDot: { width: 8, height: 8, borderRadius: 4 }, scale: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.xs }, bars: { height: 154, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around' }, barGroup: { alignItems: 'center', gap: 7 }, barPair: { height: 128, flexDirection: 'row', alignItems: 'flex-end', gap: 4 }, bar: { width: 16, borderRadius: 6 }, axis: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.xs }, dataTable: { borderTopWidth: 1, borderTopColor: colors.border, marginTop: spacing.md, paddingTop: spacing.sm, gap: 6 }, dataRow: { flexDirection: 'row', justifyContent: 'space-between' }, warning: { flexDirection: 'row', gap: 5, alignItems: 'flex-start' }, nextGrid: { flexDirection: 'row', gap: spacing.sm }, nextCard: { flex: 1, minHeight: 132, gap: spacing.sm },
+const styles = StyleSheet.create({
+  nav: { marginBottom: spacing.lg },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  titleCopy: { flex: 1, gap: 2, minWidth: 0 },
+  title: { marginTop: spacing.xs, marginBottom: spacing.sm },
+  horizonSection: { marginTop: spacing.xl, marginBottom: spacing.lg },
+  horizonHeading: { gap: 3, marginBottom: spacing.sm },
+  horizonRow: { flexDirection: 'row', gap: spacing.sm },
+  horizonOption: { width: '48%', minWidth: 0, flexGrow: 0, flexShrink: 1, marginBottom: 0, padding: spacing.sm },
+  inputCard: { gap: spacing.xs, marginBottom: spacing.lg },
+  resultCard: { marginBottom: spacing.xxl, gap: spacing.md },
+  resultTop: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.sm },
+  metrics: { flexDirection: 'row', gap: spacing.xs },
+  chart: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md },
+  chartLegend: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.sm },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  legendDot: { width: 8, height: 8, borderRadius: 4 },
+  scale: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.xs },
+  bars: { height: 154, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around' },
+  barGroup: { alignItems: 'center', gap: 7 },
+  barPair: { height: 128, flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
+  bar: { width: 16, borderRadius: 6 },
+  axis: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.xs },
+  dataTable: { borderTopWidth: 1, borderTopColor: colors.border, marginTop: spacing.md, paddingTop: spacing.sm, gap: 6 },
+  dataRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  warning: { flexDirection: 'row', gap: 5, alignItems: 'flex-start' },
+  nextGrid: { flexDirection: 'row', gap: spacing.sm },
+  nextCardPressable: { flex: 1, minWidth: 0 },
+  nextCard: { flex: 1, minWidth: 0, minHeight: 132, gap: spacing.sm },
 });
 

@@ -11,14 +11,14 @@ describe('HomeHearts landing feature model', () => {
   });
 
   it('stacks landing actions through common phone widths', () => {
-    expect(getLandingActionLayout(375)).toBe('stacked');
-    expect(getLandingActionLayout(430)).toBe('stacked');
-    expect(getLandingActionLayout(431)).toBe('split');
+    expect(getLandingActionLayout(359)).toBe('stacked');
+    expect(getLandingActionLayout(360)).toBe('stacked');
+    expect(getLandingActionLayout(375)).toBe('split');
   });
 
   it('labels the call action according to saved-plan state', () => {
-    expect(getLandingOptionCopy('call', false)).toEqual({ title: 'Start your plan', detail: 'Answer a few questions first.' });
-    expect(getLandingOptionCopy('call', true)).toEqual({ title: 'Open my plan', detail: 'Continue your saved next steps.' });
+    expect(getLandingOptionCopy('call', false)).toEqual({ title: 'Open my plan', detail: 'See your next steps.' });
+    expect(getLandingOptionCopy('call', true)).toEqual({ title: 'Open my plan', detail: 'Pick up your next step.' });
   });
 
   it('wraps previous and next feature indexes', () => {
@@ -29,7 +29,7 @@ describe('HomeHearts landing feature model', () => {
   it('routes the features to their real HomeHearts flows', () => {
     expect(getLandingRoute('help', false)).toBe('/intake');
     expect(getLandingRoute('compare', false)).toBe('/compare');
-    expect(getLandingRoute('call', false)).toBe('/intake');
+    expect(getLandingRoute('call', false)).toBe('/plan');
     expect(getLandingRoute('call', true)).toBe('/plan');
   });
 });
