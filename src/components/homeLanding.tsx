@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   secondaryStack: { flexDirection: 'column' },
   primaryPressable: { borderRadius: radii.xl, ...shadows.floating },
   primaryOption: { minHeight: 208, borderRadius: radii.xl, padding: spacing.lg, gap: spacing.xs, overflow: 'hidden', backgroundColor: colors.harborDeep },
-  cardArt: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, width: undefined, height: undefined },
+  cardArt: { position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' },
   primaryShade: { position: 'absolute', left: 0, top: 0, bottom: 0, width: '66%', backgroundColor: 'rgba(40,22,83,0.26)' },
   primaryTitle: { maxWidth: '70%', marginTop: spacing.xs },
   primaryDetail: { maxWidth: '70%', marginTop: 2 },
