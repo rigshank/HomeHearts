@@ -3,21 +3,132 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { Button, Card, FloatingBack, HText, Pill, Reveal, Screen, SectionHeading, StatusBadge } from '../../src/components/ui';
-import { colors, spacing } from '../../src/design/tokens';
-import { DALLAS_PROGRAMS } from '../../src/data/programs';
-import { DOCUMENT_LABELS } from '../../src/domain/types';
 import { MetricTile, VisualMark } from '../../src/components/visuals';
+import { PROGRAMS } from '../../src/data/programs';
+import { colors, spacing } from '../../src/design/tokens';
+import { getMatchResults, getProgramAvailability } from '../../src/domain/matching';
+import { DOCUMENT_LABELS, Program } from '../../src/domain/types';
+import { useHomeHeartsStore } from '../../src/state/useHomeHeartsStore';
+
+const SERVICE_LABELS: Record<Program['kind'], string> = {
+  direct: 'Direct service',
+  referral: 'Referral',
+  long_term: 'Long-term housing',
+};
 
 export default function ProgramDetailScreen() {
   const { programId } = useLocalSearchParams<{ programId: string }>();
   const router = useRouter();
-  const [callFeedback, setCallFeedback] = useState<string | null>(null);
-  const program = DALLAS_PROGRAMS.find((item) => item.id === programId);
-  if (!program) return <Screen><FloatingBack /><View style={styles.missing}><HText variant="title">That program is no longer in this session.</HText><Button onPress={() => router.replace('/matches')}>Back to matches</Button></View></Screen>;
-  const callProvider = async () => { if (!program.phone) return; const url = `tel:${program.phone.replace(/[^0-9+]/g, '')}`; try { if (await Linking.canOpenURL(url)) await Linking.openURL(url); else setCallFeedback(`Calling is unavailable here. Use ${program.phone}.`); } catch { setCallFeedback(`Calling is unavailable here. Use ${program.phone}.`); } };
-  return <Screen><View style={styles.nav}><FloatingBack /></View><Reveal><View style={styles.topRow}><Pill tone="purple">DALLAS OPTION</Pill><StatusBadge status={program.status} label={program.statusLabel} /></View><View style={styles.titleRow}><VisualMark icon="home-outline" size="small" label="Housing program" /><View style={styles.titleCopy}><HText variant="title" style={styles.title}>{program.name}</HText><HText variant="caption" color={colors.muted} numberOfLines={1}>{program.provider}</HText></View></View></Reveal><Reveal index={1}><Card tone="purple" style={styles.assistanceCard}><HText variant="caption" color={colors.primaryDark}>WHAT THIS MAY OFFER</HText><View style={styles.assistanceGrid}><MetricTile icon="cash-outline" label="Amount" value={program.assistance.amountLabel} /><MetricTile icon="time-outline" label="Duration" value={program.assistance.durationLabel} tone="neutral" /><MetricTile icon="arrow-forward-circle-outline" label="How" value={program.assistance.methodLabel} tone="coral" /></View></Card></Reveal><Reveal index={2}><SectionHeading eyebrow="WHY IT’S HERE" title="A transparent match" /><Card style={styles.reasonCard}><View style={styles.reason}><Ionicons name="location-outline" size={18} color={colors.primary} /><View style={styles.reasonText}><HText variant="bodyStrong">Dallas coverage</HText><HText variant="caption" color={colors.muted}>{program.coverage}</HText></View></View><View style={styles.reason}><Ionicons name="time-outline" size={18} color={colors.primary} /><View style={styles.reasonText}><HText variant="bodyStrong">Checked {program.verifiedAt}</HText><HText variant="caption" color={colors.muted}>{program.verificationNote}</HText></View></View><View style={styles.reason}><Ionicons name="shield-checkmark-outline" size={18} color={colors.success} /><View style={styles.reasonText}><HText variant="bodyStrong">Official source</HText><HText variant="caption" color={colors.muted}>Linked to {program.sourceLabel}. Not an approval.</HText></View></View></Card></Reveal><Reveal index={3}><SectionHeading eyebrow="BEFORE YOU APPLY" title="Check these details" /><Card style={styles.detailCard}><HText variant="bodyStrong">Who may qualify</HText>{program.eligibility.map((item) => <View style={styles.bullet} key={item}><Ionicons name="checkmark-circle-outline" size={17} color={colors.success} /><HText variant="caption" color={colors.mutedStrong}>{item}</HText></View>)}<View style={styles.divider} /><HText variant="bodyStrong">Bring or upload</HText>{program.requiredDocuments.length ? program.requiredDocuments.map((kind) => <View style={styles.bullet} key={kind}><Ionicons name="document-text-outline" size={17} color={colors.primary} /><HText variant="caption" color={colors.mutedStrong}>{DOCUMENT_LABELS[kind]}</HText></View>) : <HText variant="caption" color={colors.muted}>No document list needed to start.</HText>}</Card></Reveal><Reveal index={4}><View style={styles.actions}>{callFeedback && <Card tone="coral" style={styles.feedback}><HText variant="caption" color={colors.danger}>{callFeedback}</HText></Card>}<Button icon="document-attach-outline" onPress={() => router.push({ pathname: '/matches/[programId]/application', params: { programId: program.id } })}>Prepare documents</Button><Button variant="secondary" icon="call-outline" onPress={callProvider} disabled={!program.phone}>Call provider</Button><Button variant="ghost" icon="open-outline" onPress={() => Linking.openURL(program.sourceUrl)}>Open official source</Button></View></Reveal></Screen>;
+  const intake = useHomeHeartsStore((state) => state.intake);
+  const [linkFeedback, setLinkFeedback] = useState<string | null>(null);
+  const program = PROGRAMS.find((item) => item.id === programId);
+  if (!program) {
+    return <Screen><FloatingBack /><HText variant="title">This program is unavailable.</HText>
+      <Button onPress={() => router.replace('/matches')}>Back to matches</Button></Screen>;
+  }
+  const now = new Date();
+  const availability = getProgramAvailability(program, now);
+  const { actionable, later } = getMatchResults([program], intake, now);
+  const match = actionable[0] ?? later[0];
+  const { phone, intakeUrl } = program;
+  const canPrepare = program.kind === 'direct' && availability.status !== 'closed';
+
+  async function openLink(url: string, fallback: string) {
+    setLinkFeedback(null);
+    try {
+      await Linking.openURL(url);
+    } catch {
+      setLinkFeedback(fallback);
+    }
+  }
+
+  function callProvider(phone: string) {
+    return openLink('tel:' + phone.replace(/[^0-9+]/g, ''), 'Calling is unavailable here. Use ' + phone + '.');
+  }
+
+  return (
+    <Screen>
+      <View style={styles.nav}><FloatingBack /></View>
+      <Reveal>
+        <View style={styles.badges}>
+          <Pill tone="purple">{SERVICE_LABELS[program.kind]}</Pill>
+          <StatusBadge status={availability.status} label={availability.label} />
+        </View>
+        <View style={styles.titleRow}>
+          <VisualMark icon="home-outline" size="small" label="Housing resource" />
+          <View style={styles.titleCopy}>
+            <HText variant="title">{program.name}</HText>
+            <HText variant="caption" color={colors.muted}>{program.provider}</HText>
+          </View>
+        </View>
+        <HText variant="body" color={colors.muted} style={styles.description}>{program.description}</HText>
+      </Reveal>
+
+      <SectionHeading title="Next step" />
+      <Card tone="purple" style={styles.sectionCard}>
+        {availability.timing && <HText variant="bodyStrong">{availability.timing}</HText>}
+        <HText variant="body">{availability.status === 'call_to_verify' && program.status !== 'call_to_verify'
+          ? 'Check current intake on the official page before preparing an application.'
+          : program.nextStep}</HText>
+        {phone && (
+          <Button icon="call-outline" onPress={() => void callProvider(phone)}>Call {phone}</Button>
+        )}
+        {intakeUrl && availability.status !== 'closed' && (
+          <Button variant="secondary" icon="open-outline"
+            onPress={() => void openLink(intakeUrl, 'Couldn’t open intake. Try the official source below.')}>Open provider intake</Button>
+        )}
+        <Button variant="ghost" icon="open-outline"
+          onPress={() => void openLink(program.sourceUrl, 'Couldn’t open the official source: ' + program.sourceUrl)}>Open official source</Button>
+        {linkFeedback && <HText variant="caption" color={colors.danger}>{linkFeedback}</HText>}
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <HText variant="bodyStrong">{match ? 'Why this is here' : 'Service area'}</HText>
+        {match ? match.matchedReasons.map((reason) => <HText key={reason} variant="caption">{reason}</HText>)
+          : <HText variant="caption">{program.coverage}</HText>}
+        {match?.unknownReasons.map((reason) => <HText key={reason} variant="caption" color={colors.warning}>{reason}</HText>)}
+        <HText variant="bodyStrong">Source and date checked</HText>
+        <HText variant="caption" color={colors.muted}>{program.sourceLabel} · {program.verificationMethod === 'provider_website' ? 'Website reviewed' : 'Reviewed'} {program.verifiedAt}</HText>
+        <HText variant="caption" color={colors.muted}>{program.verificationNote}</HText>
+      </Card>
+
+      <SectionHeading title="What this service offers" />
+      <View style={styles.assistanceGrid}>
+        <MetricTile icon="cash-outline" label="Help" value={program.assistance.amountLabel} />
+        <MetricTile icon="time-outline" label="Timing" value={program.assistance.durationLabel} tone="neutral" />
+        <MetricTile icon="arrow-forward-circle-outline" label="How" value={program.assistance.methodLabel} tone="coral" />
+      </View>
+
+      <SectionHeading title="Eligibility and documents" />
+      <Card style={styles.sectionCard}>
+        {program.eligibility.map((item) => (
+          <View key={item} style={styles.bullet}>
+            <Ionicons name="checkmark-circle-outline" size={17} color={colors.success} />
+            <HText style={styles.bulletText} variant="caption">{item}</HText>
+          </View>
+        ))}
+        {(program.requiredDocuments.length > 0 || program.documentNote) && <HText variant="bodyStrong">Documents</HText>}
+        {program.requiredDocuments.map((kind) => <HText key={kind} variant="caption">{DOCUMENT_LABELS[kind]}</HText>)}
+        {program.documentNote && <HText variant="caption" color={colors.muted}>{program.documentNote}</HText>}
+        {canPrepare && (
+          <Button icon="document-attach-outline"
+            onPress={() => router.push({ pathname: '/matches/[programId]/application', params: { programId: program.id } })}>
+            {program.requiredDocuments.length ? 'Prepare documents' : 'Plan my next step'}
+          </Button>
+        )}
+      </Card>
+    </Screen>
+  );
 }
 
-const styles = StyleSheet.create({ nav: { marginBottom: spacing.lg }, topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.md }, titleCopy: { flex: 1 }, title: { marginBottom: spacing.xs }, assistanceCard: { marginTop: spacing.xl, marginBottom: spacing.xxl, gap: spacing.md }, assistanceGrid: { flexDirection: 'row', gap: spacing.xs }, reasonCard: { gap: spacing.md, marginBottom: spacing.xxl }, reason: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' }, reasonText: { flex: 1, gap: 2 }, detailCard: { gap: spacing.sm, marginBottom: spacing.xxl }, bullet: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' }, divider: { height: 1, backgroundColor: colors.border, marginVertical: spacing.xs }, actions: { gap: spacing.sm, marginBottom: spacing.lg }, feedback: { marginBottom: spacing.xs }, missing: { alignItems: 'center', gap: spacing.lg, paddingTop: 180 },
+const styles = StyleSheet.create({
+  nav: { marginBottom: spacing.lg },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.md },
+  titleCopy: { flex: 1, gap: spacing.xs },
+  description: { marginVertical: spacing.md },
+  sectionCard: { gap: spacing.sm, marginBottom: spacing.lg },
+  assistanceGrid: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.lg },
+  bullet: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' },
+  bulletText: { flex: 1 },
 });
-

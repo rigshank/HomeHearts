@@ -6,17 +6,42 @@ export type DocumentKind = 'photo_id' | 'lease_or_rent_notice' | 'income_proof' 
 export type DocumentUploadState = 'missing' | 'uploaded' | 'uploading' | 'error';
 export type TaskStatus = 'todo' | 'done' | 'skipped';
 
-export type IntakeProfile = { issue: IssueType | null; urgency: Urgency | null; city: string; zipCode: string; rentIncreaseCents?: number };
+export type County = '48085' | '48113' | '48121' | '48139' | '48257' | '48397' | '48439' | 'other';
+export type ServiceArea =
+  | { kind: 'nationwide' }
+  | { kind: 'texas' }
+  | { kind: 'dallas_city' }
+  | { kind: 'counties'; counties: Exclude<County, 'other'>[] };
+export type ServiceType = ProgramCategory | 'safety' | 'accessible' | 'veteran' | 'youth';
+
+export type IntakeProfile = {
+  issue: IssueType | null;
+  urgency: Urgency | null;
+  zipCode: string;
+  county?: County | 'unsure';
+  insideDallas?: boolean | 'unsure';
+  rentIncreaseCents?: number;
+};
 
 export type Program = {
   id: string; name: string; provider: string; category: ProgramCategory; description: string; coverage: string;
-  status: ProgramStatus; statusLabel: string; sourceUrl: string; sourceLabel: string; phone?: string;
-  verifiedAt: string; verificationNote: string; eligibility: string[]; matchableIssues: IssueType[];
+  serviceArea: ServiceArea; serviceTypes: ServiceType[]; kind: 'direct' | 'referral' | 'long_term';
+  status: ProgramStatus; sourceUrl: string; sourceLabel: string; phone?: string; intakeUrl?: string;
+  verifiedAt: string; verificationMethod: 'provider_website'; verificationNote: string;
+  eligibility: string[]; eligibilityToConfirm?: string;
   assistance: { amountLabel: string; durationLabel: string; methodLabel: string }; requiredDocuments: DocumentKind[];
-  deadlineLabel?: string; tags: string[];
+  documentNote?: string;
+  nextStep: string;
+  immediate?: boolean;
+  reopening?: { at: string; label: string };
+  deadline?: { at: string; label: string };
 };
 
-export type MatchResult = { program: Program; score: number; matchedReasons: string[]; unknownReasons: string[] };
+export type MatchResult = {
+  program: Program;
+  matchedReasons: string[];
+  unknownReasons: string[];
+};
 export type ComparisonInput = { monthlyStayCents: number; monthlyStayAfterIncreaseCents: number; movingUpfrontCents: number; movingMonthlyCents: number; horizonMonths: 3 | 12 };
 export type ComparisonPoint = { month: number; stayCents: number; moveCents: number };
 export type ComparisonResult = { horizonMonths: 3 | 12; stayTotalCents: number; moveTotalCents: number; breakEvenMonth: number | null; points: ComparisonPoint[]; warnings: string[] };
