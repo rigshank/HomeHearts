@@ -23,7 +23,7 @@ type StoreState = {
   resetProgress: () => void;
 };
 
-const defaultIntake: IntakeProfile = { issue: null, urgency: null, city: 'Dallas', zipCode: '' };
+const defaultIntake: IntakeProfile = { issue: null, urgency: null, zipCode: '' };
 const defaultComparison: ComparisonInput = { monthlyStayCents: 145000, monthlyStayAfterIncreaseCents: 160000, movingUpfrontCents: 320000, movingMonthlyCents: 135000, horizonMonths: 12 };
 
 export const useHomeHeartsStore = create<StoreState>()(persist((set) => ({
