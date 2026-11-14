@@ -25,7 +25,9 @@ npx expo export --platform web
 
 ## Data and trust model
 
-The Dallas catalog is seeded from official City of Dallas, Dallas County, Housing Forward, 2-1-1 Texas, TDHCA, DHA, and Legal Aid sources. Each entry carries a source URL, checked date, coverage, status, eligibility notes, and a safe status label. The app says “call to verify” or “waitlist” when availability is not guaranteed; a match is not an approval decision.
+The bundled catalog links to provider websites and records when each source was checked, the service area, eligibility, intake status, and the next step. The app separates options to pursue now from closed intake and waitlists. An open status expires after seven days, and an announced reopening prompts a fresh check when the date arrives.
+
+Matching runs on the device. The ZIP lookup comes from the [2020 Census ZCTA-to-county and ZCTA-to-place relationship files](https://www.census.gov/geographies/reference-files/2020/geo/relationship-files.html), which approximate residential ZIP coverage. Intake asks for county or city-limit confirmation when an overlap affects the results. The appropriate 211 directory remains available when the catalog has no matching services or does not recognize the ZIP.
 
 ## Upload behavior
 
