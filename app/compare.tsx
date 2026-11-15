@@ -71,7 +71,7 @@ export default function CompareScreen() {
     <SectionHeading eyebrow="NEXT STEP" title="Get support" />
     <Reveal index={4}>
       <View style={styles.nextGrid}>
-        <Card tone="purple" style={styles.nextCard} pressableStyle={styles.nextCardPressable} onPress={() => { useHomeHeartsStore.getState().setIntake({ issue: 'rent_increase' }); router.push('/intake'); }}>
+        <Card tone="purple" style={styles.nextCard} pressableStyle={styles.nextCardPressable} onPress={() => { const increase = comparison.monthlyStayAfterIncreaseCents - comparison.monthlyStayCents; useHomeHeartsStore.getState().setIntake({ issue: 'rent_increase', rentIncreaseCents: increase > 0 ? increase : undefined }); router.push('/intake'); }}>
           <Ionicons accessible={false} aria-hidden name="home-outline" size={22} color={colors.primary} />
           <HText variant="bodyStrong">Help to stay</HText>
           <HText variant="caption" color={colors.muted}>Rent, utility, or legal help.</HText>
