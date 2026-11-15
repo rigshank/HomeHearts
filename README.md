@@ -57,7 +57,7 @@ For a simulator or emulator, follow Expo's [iOS Simulator setup](https://docs.ex
 
 ## 3. Try the three main flows
 
-1. **Compare costs.** From Home, choose **Compare costs**. Enter current rent, rent after the increase, upfront moving costs, and monthly rent after moving. Toggle between **3 months** and **12 months** to see how the totals change.
+1. **Compare costs.** From Home, choose **Compare costs**. Enter current rent, rent after the increase, upfront moving costs, and monthly rent after moving. Toggle between **3 months** and **12 months** to see how the totals change. To estimate a new place, enter a ZIP code and bedroom count under **Planning a move?** and choose **Use as monthly cost after move** to fill in HUD's benchmark rent.
 2. **Find assistance.** Choose **Find help now**, select **Rent went up** and **This week**, and enter `75201` as the ZIP code. Choose **Show my matches**, then open a result for its service area, intake status, eligibility, and official source. Results depend on the issue, ZIP code, and date. Use **Options for later** for closed programs and waitlists.
 3. **Prepare and save a plan.** From that rent search, open **Dallas County Welfare Assistance** and scroll to **Prepare documents**. Add a sample PDF or image, then choose **View plan** to review your checklist. Use **Open call script** to see and copy the sample script. Use sample files for the demo and stop before calling a real provider.
 
@@ -70,7 +70,11 @@ For a simulator or emulator, follow Expo's [iOS Simulator setup](https://docs.ex
 
 ## Data and document handling
 
-Matches use a bundled catalog with provider links and checked dates. Confirm current intake and eligibility with the provider. ZIP-based service areas are approximations based on [U.S. Census relationship files](https://www.census.gov/geographies/reference-files/2020/geo/relationship-files.html). The app offers a 211 directory when you need more options.
+Matches come from a catalog of programs with provider links and checked dates, curated from the official provider websites. The app downloads the latest catalog (`src/data/catalog.json` on this repository's `main` branch) when it opens and falls back to a saved or bundled copy when offline. The Matches screen shows which copy you are seeing, with a **Refresh** button. Confirm current intake and eligibility with the provider.
+
+The cost comparison's rent lookup uses [HUD's FY2027 Small Area Fair Market Rents](https://www.huduser.gov/portal/datasets/fmr.html) for Texas ZIP codes, stored in `src/data/hudRents.json`. HUD uses these figures as a benchmark for housing vouchers, so they are a reference point, not an average of current listings. `python3 scripts/build-hud-rents.py <HUD workbook>.xlsx` regenerates the file when HUD publishes a new year.
+
+ZIP-based service areas are approximations based on [U.S. Census relationship files](https://www.census.gov/geographies/reference-files/2020/geo/relationship-files.html). The app offers a 211 directory when you need more options.
 
 The default setup saves plan progress locally. Files picked for the checklist are staged in the app cache for the current session. HomeHearts does not submit an application or send those files to a provider. `.env.example` describes the optional Supabase configuration for developers.
 

@@ -7,14 +7,17 @@ import { colors, spacing } from '../src/design/tokens';
 import { calculateComparison, formatCurrency } from '../src/domain/cost';
 import { useHomeHeartsStore } from '../src/state/useHomeHeartsStore';
 import { MetricTile, VisualMark } from '../src/components/visuals';
+import { RentBenchmarkCard } from '../src/components/rentBenchmark';
 
 export default function CompareScreen() {
   const router = useRouter();
   const comparison = useHomeHeartsStore((state) => state.comparison);
   const setComparison = useHomeHeartsStore((state) => state.setComparison);
+  const intakeZip = useHomeHeartsStore((state) => state.intake.zipCode);
   const [drafts, setDrafts] = useState({ stay: String(comparison.monthlyStayCents / 100), afterIncrease: String(comparison.monthlyStayAfterIncreaseCents / 100), upfront: String(comparison.movingUpfrontCents / 100), movingMonthly: String(comparison.movingMonthlyCents / 100) });
   const updateDraft = (key: keyof typeof drafts, value: string) => setDrafts((current) => ({ ...current, [key]: value }));
   const commit = (key: keyof typeof drafts) => { const centsKey = { stay: 'monthlyStayCents', afterIncrease: 'monthlyStayAfterIncreaseCents', upfront: 'movingUpfrontCents', movingMonthly: 'movingMonthlyCents' }[key] as keyof typeof comparison; setComparison({ [centsKey]: parseMoney(drafts[key]) }); };
+  const applyBenchmark = (cents: number) => { updateDraft('movingMonthly', String(cents / 100)); setComparison({ movingMonthlyCents: cents }); };
   const result = calculateComparison(comparison);
   return <Screen>
     <View style={styles.nav}><FloatingBack /></View>
@@ -50,6 +53,9 @@ export default function CompareScreen() {
       </Card>
     </Reveal>
     <Reveal index={3}>
+      <RentBenchmarkCard initialZip={intakeZip} onUse={applyBenchmark} />
+    </Reveal>
+    <Reveal index={4}>
       <Card style={styles.resultCard}>
         <View style={styles.resultTop}>
           <View>
