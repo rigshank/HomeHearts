@@ -48,8 +48,8 @@ export default function CompareScreen() {
         <SectionHeading eyebrow="YOUR NUMBERS" title="What should we compare?" />
         <Field label="Rent now" keyboardType="decimal-pad" value={drafts.stay} onChangeText={(value) => updateDraft('stay', value)} onBlur={() => commit('stay')} />
         <Field label="Rent after increase" helper="Use the new rent from your notice." keyboardType="decimal-pad" value={drafts.afterIncrease} onChangeText={(value) => updateDraft('afterIncrease', value)} onBlur={() => commit('afterIncrease')} />
-        <Field label="Move-up cost" helper="Deposit, movers, and fees." keyboardType="decimal-pad" value={drafts.upfront} onChangeText={(value) => updateDraft('upfront', value)} onBlur={() => commit('upfront')} />
-        <Field label="Monthly cost after move" keyboardType="decimal-pad" value={drafts.movingMonthly} onChangeText={(value) => updateDraft('movingMonthly', value)} onBlur={() => commit('movingMonthly')} />
+        <Field label="Upfront moving cost" helper="Deposit, movers, and fees." keyboardType="decimal-pad" value={drafts.upfront} onChangeText={(value) => updateDraft('upfront', value)} onBlur={() => commit('upfront')} />
+        <Field label="Monthly cost after move" helper="Not sure? Look up a typical rent in “Planning a move?” below." keyboardType="decimal-pad" value={drafts.movingMonthly} onChangeText={(value) => updateDraft('movingMonthly', value)} onBlur={() => commit('movingMonthly')} />
       </Card>
     </Reveal>
     <Reveal index={3}>
