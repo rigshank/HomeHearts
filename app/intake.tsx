@@ -4,10 +4,10 @@ import React, { useState } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Button, Field, FloatingBack, HText, IssueTile, OptionButton, ProgressBar, Reveal, Screen } from '../src/components/ui';
 import { colors, spacing } from '../src/design/tokens';
-import { DALLAS_PROGRAMS } from '../src/data/programs';
 import { getLocationQuestions } from '../src/domain/matching';
 import { COUNTY_LABELS, isZipCode } from '../src/domain/serviceArea';
 import { IssueType, Urgency } from '../src/domain/types';
+import { useCatalogStore } from '../src/state/useCatalogStore';
 import { useHomeHeartsStore } from '../src/state/useHomeHeartsStore';
 import { getIssueTileColumns } from '../src/components/visualLayout';
 
@@ -38,7 +38,8 @@ export default function IntakeScreen() {
   const setIntake = useHomeHeartsStore((state) => state.setIntake);
   const { location } = useLocalSearchParams<{ location?: string }>();
   const [step, setStep] = useState(location === '1' ? 2 : 0);
-  const questions = getLocationQuestions(DALLAS_PROGRAMS, intake);
+  const programs = useCatalogStore((state) => state.programs);
+  const questions = getLocationQuestions(programs, intake);
   const needsCounty = questions.counties.length > 0;
   const canContinue = [
     Boolean(intake.issue),

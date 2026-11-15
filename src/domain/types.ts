@@ -37,6 +37,12 @@ export type Program = {
   deadline?: { at: string; label: string };
 };
 
+export type Catalog = {
+  lastUpdated: string;
+  programs: Program[];
+  national211: Program;
+};
+
 export type MatchResult = {
   program: Program;
   matchedReasons: string[];
