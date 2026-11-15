@@ -4,10 +4,10 @@ import React, { useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { Button, Card, FloatingBack, HText, Pill, Reveal, Screen, SectionHeading, StatusBadge } from '../../src/components/ui';
 import { MetricTile, VisualMark } from '../../src/components/visuals';
-import { PROGRAMS } from '../../src/data/programs';
 import { colors, spacing } from '../../src/design/tokens';
 import { getMatchResults, getProgramAvailability } from '../../src/domain/matching';
 import { DOCUMENT_LABELS, Program } from '../../src/domain/types';
+import { useCatalogStore } from '../../src/state/useCatalogStore';
 import { useHomeHeartsStore } from '../../src/state/useHomeHeartsStore';
 
 const SERVICE_LABELS: Record<Program['kind'], string> = {
@@ -21,14 +21,16 @@ export default function ProgramDetailScreen() {
   const router = useRouter();
   const intake = useHomeHeartsStore((state) => state.intake);
   const [linkFeedback, setLinkFeedback] = useState<string | null>(null);
-  const program = PROGRAMS.find((item) => item.id === programId);
+  const allPrograms = useCatalogStore((state) => state.allPrograms);
+  const national211 = useCatalogStore((state) => state.national211);
+  const program = allPrograms.find((item) => item.id === programId);
   if (!program) {
     return <Screen><FloatingBack /><HText variant="title">This program is unavailable.</HText>
       <Button onPress={() => router.replace('/matches')}>Back to matches</Button></Screen>;
   }
   const now = new Date();
   const availability = getProgramAvailability(program, now);
-  const { actionable, later } = getMatchResults([program], intake, now);
+  const { actionable, later } = getMatchResults([program], intake, now, national211);
   const match = actionable[0] ?? later[0];
   const { phone, intakeUrl } = program;
   const canPrepare = program.kind === 'direct' && availability.status !== 'closed';

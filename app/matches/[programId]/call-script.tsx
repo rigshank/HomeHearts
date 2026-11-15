@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { Button, Card, FloatingBack, HText, Pill, Reveal, Screen, SectionHeading } from '../../../src/components/ui';
 import { colors, spacing } from '../../../src/design/tokens';
-import { PROGRAMS } from '../../../src/data/programs';
+import { useCatalogStore } from '../../../src/state/useCatalogStore';
 import { issueLabel } from '../../../src/domain/matching';
 import { useHomeHeartsStore } from '../../../src/state/useHomeHeartsStore';
 import { VisualMark } from '../../../src/components/visuals';
@@ -14,7 +14,8 @@ export default function CallScriptScreen() {
   const { programId } = useLocalSearchParams<{ programId: string }>();
   const router = useRouter();
   const intake = useHomeHeartsStore((state) => state.intake);
-  const program = PROGRAMS.find((item) => item.id === programId);
+  const allPrograms = useCatalogStore((state) => state.allPrograms);
+  const program = allPrograms.find((item) => item.id === programId);
   const [feedback, setFeedback] = useState<string | null>(null);
   if (!program) return <Screen><FloatingBack /><HText variant="title">Program unavailable.</HText></Screen>;
   const spokenIntro = `Hi, I’m calling because I’m facing ${issueLabel(intake.issue)}${intake.zipCode ? ' near ZIP code ' + intake.zipCode : ''}. I’d like to understand whether your program is accepting applications and what I should prepare.`;

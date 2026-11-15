@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Button, Card, HText, ProgressBar, Reveal, Screen, SectionHeading } from '../../src/components/ui';
 import { colors, radii, spacing } from '../../src/design/tokens';
-import { PROGRAMS } from '../../src/data/programs';
+import { useCatalogStore } from '../../src/state/useCatalogStore';
 import { updatePlanTasks } from '../../src/domain/planning';
 import { useHomeHeartsStore } from '../../src/state/useHomeHeartsStore';
 import { VisualMark } from '../../src/components/visuals';
@@ -17,7 +17,8 @@ export default function PlanScreen() {
   const toggleTask = useHomeHeartsStore((state) => state.toggleTask);
   const skipTask = useHomeHeartsStore((state) => state.skipTask);
   const rescheduleTask = useHomeHeartsStore((state) => state.rescheduleTask);
-  const program = PROGRAMS.find((item) => item.id === selectedProgramId);
+  const allPrograms = useCatalogStore((state) => state.allPrograms);
+  const program = allPrograms.find((item) => item.id === selectedProgramId);
   useEffect(() => {
     if (!program) return;
     const updatedTasks = updatePlanTasks(program, tasks);

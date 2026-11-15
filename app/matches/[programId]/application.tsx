@@ -5,7 +5,7 @@ import { Linking, Platform, StyleSheet, View } from 'react-native';
 import { File } from 'expo-file-system';
 import { Button, Card, FloatingBack, HText, Pill, Reveal, Screen, SectionHeading } from '../../../src/components/ui';
 import { colors, radii, spacing } from '../../../src/design/tokens';
-import { PROGRAMS } from '../../../src/data/programs';
+import { useCatalogStore } from '../../../src/state/useCatalogStore';
 import { DOCUMENT_HINTS, DOCUMENT_LABELS, DocumentKind } from '../../../src/domain/types';
 import { pickAndStageDocument, removeStagedDocument } from '../../../src/data/uploadRepository';
 import { createPlanTasks } from '../../../src/domain/planning';
@@ -15,7 +15,8 @@ import { VisualMark } from '../../../src/components/visuals';
 export default function ApplicationPrepScreen() {
   const { programId } = useLocalSearchParams<{ programId: string }>();
   const router = useRouter();
-  const program = PROGRAMS.find((item) => item.id === programId);
+  const allPrograms = useCatalogStore((state) => state.allPrograms);
+  const program = allPrograms.find((item) => item.id === programId);
   const documents = useHomeHeartsStore((state) => state.documents);
   const upsertDocument = useHomeHeartsStore((state) => state.upsertDocument);
   const setPlanTasks = useHomeHeartsStore((state) => state.setPlanTasks);

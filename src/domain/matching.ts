@@ -76,7 +76,7 @@ export function getProgramAvailability(program: Program, now = new Date()) {
   };
 }
 
-export function getMatchResults(programs: Program[], intake: IntakeProfile, now = new Date()) {
+export function getMatchResults(programs: Program[], intake: IntakeProfile, now = new Date(), national211: Program = NATIONAL_211) {
   const results: { actionable: MatchResult[]; later: MatchResult[]; referral?: Program } = { actionable: [], later: [] };
   if (!isZipCode(intake.zipCode) || !intake.issue || !intake.urgency) return results;
 
@@ -107,7 +107,7 @@ export function getMatchResults(programs: Program[], intake: IntakeProfile, now 
   for (const { later, match } of ranked) {
     (later ? results.later : results.actionable).push(match);
   }
-  results.referral = programs.find((program) => program.id === 'texas-211' && servesLocation(program.serviceArea, intake)) ?? NATIONAL_211;
+  results.referral = programs.find((program) => program.id === 'texas-211' && servesLocation(program.serviceArea, intake)) ?? national211;
   return results;
 }
 

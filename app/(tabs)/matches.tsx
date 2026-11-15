@@ -3,20 +3,23 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Card, HText, Reveal, Screen, SectionHeading, StatusBadge } from '../../src/components/ui';
+import { CatalogStatus } from '../../src/components/catalogStatus';
 import { VisualMark } from '../../src/components/visuals';
-import { DALLAS_PROGRAMS } from '../../src/data/programs';
 import { colors, spacing } from '../../src/design/tokens';
 import { getLocationQuestions, getMatchResults, getProgramAvailability, issueLabel } from '../../src/domain/matching';
 import { getZipArea } from '../../src/domain/serviceArea';
 import { MatchResult, Program } from '../../src/domain/types';
+import { useCatalogStore } from '../../src/state/useCatalogStore';
 import { useHomeHeartsStore } from '../../src/state/useHomeHeartsStore';
 
 export default function MatchesScreen() {
   const router = useRouter();
   const intake = useHomeHeartsStore((state) => state.intake);
   const setSelectedProgram = useHomeHeartsStore((state) => state.setSelectedProgram);
+  const programs = useCatalogStore((state) => state.programs);
+  const national211 = useCatalogStore((state) => state.national211);
   const now = new Date();
-  const results = getMatchResults(DALLAS_PROGRAMS, intake, now);
+  const results = getMatchResults(programs, intake, now, national211);
   if (!results.referral) {
     return (
       <Screen>
@@ -29,7 +32,7 @@ export default function MatchesScreen() {
     );
   }
 
-  const questions = getLocationQuestions(DALLAS_PROGRAMS, intake);
+  const questions = getLocationQuestions(programs, intake);
   const locationUncertain =
     (questions.counties.length > 0 && (!intake.county || intake.county === 'unsure')) ||
     (questions.askDallasCity && (intake.insideDallas === undefined || intake.insideDallas === 'unsure'));
@@ -50,6 +53,7 @@ export default function MatchesScreen() {
         <Button variant="ghost" icon="location-outline" style={styles.locationButton}
           onPress={() => router.push({ pathname: '/intake', params: { location: '1' } })}>Edit location</Button>
       </Reveal>
+      <CatalogStatus />
       {locationUncertain && (
         <Card tone="purple" style={styles.notice}>
           <HText variant="caption">Your ZIP crosses a service boundary. Confirm your location to see more options.</HText>
