@@ -15,6 +15,16 @@ describe('bundled catalog', () => {
     const parsed = parseCatalog(clone(BUNDLED_CATALOG));
     expect(parsed?.programs).toHaveLength(BUNDLED_CATALOG.programs.length);
   });
+
+  it('links only to production https pages, never staging or internal hosts', () => {
+    for (const program of [...BUNDLED_CATALOG.programs, BUNDLED_CATALOG.national211]) {
+      for (const url of [program.sourceUrl, program.intakeUrl].filter((value): value is string => Boolean(value))) {
+        const { protocol, hostname } = new URL(url);
+        expect(protocol, `${program.id} ${url}`).toBe('https:');
+        expect(hostname, `${program.id} ${url}`).not.toMatch(/^(stage|staging|dev|test|qr)\./);
+      }
+    }
+  });
 });
 
 describe('parseCatalog', () => {

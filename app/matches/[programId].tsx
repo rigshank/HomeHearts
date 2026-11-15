@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { Button, Card, FloatingBack, HText, Pill, Reveal, Screen, SectionHeading, StatusBadge } from '../../src/components/ui';
+import { formatCatalogDate } from '../../src/components/catalogStatus';
 import { MetricTile, VisualMark } from '../../src/components/visuals';
 import { colors, spacing } from '../../src/design/tokens';
 import { getMatchResults, getProgramAvailability } from '../../src/domain/matching';
@@ -90,7 +91,7 @@ export default function ProgramDetailScreen() {
           : <HText variant="caption">{program.coverage}</HText>}
         {match?.unknownReasons.map((reason) => <HText key={reason} variant="caption" color={colors.warning}>{reason}</HText>)}
         <HText variant="bodyStrong">Source and date checked</HText>
-        <HText variant="caption" color={colors.muted}>{program.sourceLabel} · {program.verificationMethod === 'provider_website' ? 'Website reviewed' : 'Reviewed'} {program.verifiedAt}</HText>
+        <HText variant="caption" color={colors.muted}>{program.sourceLabel} · {program.verificationMethod === 'provider_website' ? 'Website reviewed' : 'Reviewed'} {formatCatalogDate(program.verifiedAt)}</HText>
         <HText variant="caption" color={colors.muted}>{program.verificationNote}</HText>
       </Card>
 
