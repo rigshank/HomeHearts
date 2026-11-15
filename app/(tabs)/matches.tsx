@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Card, HText, Reveal, Screen, SectionHeading, StatusBadge } from '../../src/components/ui';
-import { CatalogStatus } from '../../src/components/catalogStatus';
+import { CatalogStatus, formatCatalogDate } from '../../src/components/catalogStatus';
 import { VisualMark } from '../../src/components/visuals';
 import { colors, spacing } from '../../src/design/tokens';
 import { getLocationQuestions, getMatchResults, getProgramAvailability, issueLabel } from '../../src/domain/matching';
@@ -113,7 +113,7 @@ function ProgramCard({ match, now, onPress }: { match: MatchResult; now: Date; o
       {match.matchedReasons[0] && <HText variant="caption">{match.matchedReasons[0]}</HText>}
       {match.unknownReasons.map((reason) => <HText key={reason} variant="caption" color={colors.warning}>{reason}</HText>)}
       {availability.timing && <HText variant="caption">{availability.timing}</HText>}
-      <HText variant="micro" color={colors.muted}>SOURCE CHECKED {program.verifiedAt}</HText>
+      <HText variant="micro" color={colors.muted}>SOURCE CHECKED {formatCatalogDate(program.verifiedAt).toUpperCase()}</HText>
       <View style={styles.cardBottom}>
         <HText variant="caption" color={colors.primary}>Details & next step</HText>
         <Ionicons name="arrow-forward" size={20} color={colors.muted} />

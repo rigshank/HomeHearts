@@ -146,7 +146,7 @@
         ]
       },
       "status": "open",
-      "sourceUrl": "https://qr.dallascounty.org/departments/dchhs/human-services/ceap.php",
+      "sourceUrl": "https://www.dallascounty.org/departments/dchhs/human-services/ceap.php",
       "sourceLabel": "Dallas County energy assistance",
       "phone": "214-819-1848",
       "verificationNote": "The County listed the program as open by appointment. Its 2026 document checklist gives a processing estimate of 4–6 weeks.",
@@ -371,8 +371,8 @@
         ]
       },
       "status": "waitlist",
-      "sourceUrl": "https://stage.dhantx.com/blog/helpful-articles/learn-about-the-housing-choice-voucher-hcv-program/",
-      "intakeUrl": "https://stage.dhantx.com/blog/2026/07/10/dhas-new-lottery-and-waitlist-management-process/",
+      "sourceUrl": "https://dhantx.com/helpful-articles/learn-about-the-housing-choice-voucher-hcv-program/",
+      "intakeUrl": "https://dhantx.com/news/dhas-new-lottery-and-waitlist-management-process/",
       "sourceLabel": "DHA voucher and waitlist guidance",
       "verificationNote": "DHA describes a lottery and waitlist process. Current enrollment was not confirmed.",
       "nextStep": "Review DHA’s waitlist and lottery guidance for the housing option you want.",
