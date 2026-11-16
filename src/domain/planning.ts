@@ -19,6 +19,18 @@ export function updatePlanTasks(program: Program, savedTasks: PlanTask[]): PlanT
   });
 }
 
+const DUE_LABELS = ['Today', 'Tomorrow', 'This week', 'Next week'];
+
+export function nextDueLabel(label: string): string {
+  const index = DUE_LABELS.indexOf(label);
+  if (index === -1) return label;
+  return DUE_LABELS[(index + 1) % DUE_LABELS.length];
+}
+
+export function markDocumentTaskDone(tasks: PlanTask[], kind: DocumentKind): PlanTask[] {
+  return tasks.map((task) => task.id === `doc-${kind}` ? { ...task, status: 'done' } : task);
+}
+
 function documentLabel(kind: DocumentKind): string {
   return { photo_id: 'Photo ID', lease_or_rent_notice: 'lease or rent notice', income_proof: 'income proof', rent_increase_notice: 'rent increase notice' }[kind];
 }

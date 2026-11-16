@@ -8,7 +8,7 @@ import { colors, radii, spacing } from '../../../src/design/tokens';
 import { useCatalogStore } from '../../../src/state/useCatalogStore';
 import { DOCUMENT_HINTS, DOCUMENT_LABELS, DocumentKind } from '../../../src/domain/types';
 import { pickAndStageDocument, removeStagedDocument } from '../../../src/data/uploadRepository';
-import { createPlanTasks } from '../../../src/domain/planning';
+import { createPlanTasks, markDocumentTaskDone } from '../../../src/domain/planning';
 import { useHomeHeartsStore } from '../../../src/state/useHomeHeartsStore';
 import { VisualMark } from '../../../src/components/visuals';
 
@@ -27,7 +27,7 @@ export default function ApplicationPrepScreen() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   useEffect(() => { if (program && savedPlanProgramId !== program.id) { setSavedPlanProgram(program.id); setPlanTasks(createPlanTasks(program)); } }, [program, savedPlanProgramId, setPlanTasks, setSavedPlanProgram]);
   if (!program) return <Screen><FloatingBack /><HText variant="title">Program unavailable.</HText></Screen>;
-  const addDocument = async (kind: DocumentKind) => { setBusyKind(kind); setUploadError(null); try { const record = await pickAndStageDocument(kind); if (record) { const previous = documents[kind]; if (previous) { try { await removeStagedDocument(previous); } catch (error) { setUploadError(error instanceof Error ? error.message : 'The previous file could not be removed.'); } } upsertDocument(record); } } catch (error) { setUploadError(error instanceof Error ? error.message : 'The file could not be added. Please try again.'); } finally { setBusyKind(null); } };
+  const addDocument = async (kind: DocumentKind) => { setBusyKind(kind); setUploadError(null); try { const record = await pickAndStageDocument(kind); if (record) { const previous = documents[kind]; if (previous) { try { await removeStagedDocument(previous); } catch (error) { setUploadError(error instanceof Error ? error.message : 'The previous file could not be removed.'); } } upsertDocument(record); setPlanTasks(markDocumentTaskDone(useHomeHeartsStore.getState().planTasks, kind)); } } catch (error) { setUploadError(error instanceof Error ? error.message : 'The file could not be added. Please try again.'); } finally { setBusyKind(null); } };
   const removeDocumentFile = async (kind: DocumentKind) => { const record = documents[kind]; if (!record) return; setBusyKind(kind); setUploadError(null); try { await removeStagedDocument(record); removeDocument(kind); } catch (error) { setUploadError(error instanceof Error ? error.message : 'The file could not be removed.'); } finally { setBusyKind(null); } };
   const previewDocument = async (kind: DocumentKind) => {
     const record = documents[kind];
