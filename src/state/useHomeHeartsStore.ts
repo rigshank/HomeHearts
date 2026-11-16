@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { nextDueLabel } from '../domain/planning';
 import { ComparisonInput, DocumentKind, DocumentRecord, IntakeProfile, PlanTask } from '../domain/types';
 
 type StoreState = {
@@ -42,7 +43,7 @@ export const useHomeHeartsStore = create<StoreState>()(persist((set) => ({
   setPlanTasks: (planTasks) => set({ planTasks }),
   toggleTask: (taskId) => set((state) => ({ planTasks: state.planTasks.map((task) => task.id === taskId ? { ...task, status: task.status === 'done' ? 'todo' : 'done' } : task) })),
   skipTask: (taskId) => set((state) => ({ planTasks: state.planTasks.map((task) => task.id === taskId ? { ...task, status: 'skipped' } : task) })),
-  rescheduleTask: (taskId) => set((state) => ({ planTasks: state.planTasks.map((task) => task.id === taskId ? { ...task, dueLabel: task.dueLabel === 'Today' ? 'Tomorrow' : task.dueLabel === 'Tomorrow' ? 'This week' : 'Next week' } : task) })),
+  rescheduleTask: (taskId) => set((state) => ({ planTasks: state.planTasks.map((task) => task.id === taskId ? { ...task, dueLabel: nextDueLabel(task.dueLabel) } : task) })),
   resetProgress: () => set({ intake: defaultIntake, comparison: defaultComparison, selectedProgramId: null, savedPlanProgramId: null, documents: {}, planTasks: [] }),
 }), { name: 'homehearts-progress-v1', storage: createJSONStorage(() => AsyncStorage), partialize: (state) => ({ intake: state.intake, comparison: state.comparison, selectedProgramId: state.selectedProgramId, savedPlanProgramId: state.savedPlanProgramId, documents: Object.fromEntries(Object.entries(state.documents).map(([key, record]) => [key, record?.storageMode === 'supabase_private' ? record : { ...record, state: 'missing', localUri: undefined } ])), planTasks: state.planTasks }) }));
 
