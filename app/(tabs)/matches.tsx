@@ -50,8 +50,10 @@ export default function MatchesScreen() {
         <HText variant="micro" color={colors.primary}>RESOURCES FOR {intake.zipCode}</HText>
         <HText variant="title" style={styles.title}>Your housing options</HText>
         <HText variant="body" color={colors.muted}>Based on {issueLabel(intake.issue)} and when you need help. Each provider checks eligibility.</HText>
+        <Button variant="secondary" icon="create-outline" style={styles.editButton}
+          onPress={() => router.push({ pathname: '/intake', params: { step: '0', from: 'matches' } })}>Edit answers</Button>
         <Button variant="ghost" icon="location-outline" style={styles.locationButton}
-          onPress={() => router.push({ pathname: '/intake', params: { location: '1' } })}>Edit location</Button>
+          onPress={() => router.push({ pathname: '/intake', params: { step: '2', from: 'matches' } })}>Edit location</Button>
       </Reveal>
       <CatalogStatus />
       {locationUncertain && (
@@ -125,6 +127,7 @@ function ProgramCard({ match, now, onPress }: { match: MatchResult; now: Date; o
 const styles = StyleSheet.create({
   empty: { gap: spacing.md, paddingTop: 160 },
   title: { marginTop: spacing.xs, marginBottom: spacing.sm },
+  editButton: { marginTop: spacing.md },
   locationButton: { alignSelf: 'flex-start', marginTop: spacing.sm, marginBottom: spacing.md },
   notice: { gap: spacing.xs, marginBottom: spacing.md },
   matchCard: { marginBottom: spacing.md, gap: spacing.sm },

@@ -26,7 +26,7 @@ export default function ProgramDetailScreen() {
   const national211 = useCatalogStore((state) => state.national211);
   const program = allPrograms.find((item) => item.id === programId);
   if (!program) {
-    return <Screen><FloatingBack /><HText variant="title">This program is unavailable.</HText>
+    return <Screen><FloatingBack fallback="/matches" /><HText variant="title">This program is unavailable.</HText>
       <Button onPress={() => router.replace('/matches')}>Back to matches</Button></Screen>;
   }
   const now = new Date();
@@ -51,7 +51,7 @@ export default function ProgramDetailScreen() {
 
   return (
     <Screen>
-      <View style={styles.nav}><FloatingBack /></View>
+      <View style={styles.nav}><FloatingBack fallback="/matches" /></View>
       <Reveal>
         <View style={styles.badges}>
           <Pill tone="purple">{SERVICE_LABELS[program.kind]}</Pill>

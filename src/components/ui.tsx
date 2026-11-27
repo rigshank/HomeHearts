@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import { usePathname, useRouter } from 'expo-router';
+import { type Href, usePathname, useRouter } from 'expo-router';
 import React, { PropsWithChildren, ReactNode, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
 import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radii, shadows, spacing, typography } from '../design/tokens';
+import { goBackSafely } from '../navigation/back';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -85,9 +86,9 @@ export function Reveal({ children, index = 0 }: PropsWithChildren<{ index?: numb
   return <Animated.View style={styles.reveal} entering={reduceMotion ? undefined : FadeInDown.duration(350).delay(index * 55)}>{children}</Animated.View>;
 }
 
-export function FloatingBack({ onPress }: { onPress?: () => void }) {
+export function FloatingBack({ onPress, fallback = '/(tabs)', label = 'Go back' }: { onPress?: () => void; fallback?: Href; label?: string }) {
   const router = useRouter();
-  return <IconButton icon="chevron-back" label="Go back" onPress={onPress ?? (() => router.back())} />;
+  return <IconButton icon="chevron-back" label={label} onPress={onPress ?? (() => goBackSafely(router, fallback))} />;
 }
 
 export function TabBar() {
