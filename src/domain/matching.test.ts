@@ -78,7 +78,55 @@ describe('getProgramAvailability', () => {
     expect(getProgramAvailability(program, checked).status).toBe('open');
     expect(getProgramAvailability(program, new Date('2026-11-21T18:00:00Z')).status).toBe('call_to_verify');
     const withDeadline = { ...program, deadline: { at: '2026-11-14T18:00:00Z', label: 'November 14 at noon CT' } };
-    expect(getProgramAvailability(withDeadline, checked).timing).toBe('Apply by November 14 at noon CT');
+    expect(getProgramAvailability(withDeadline, checked).timing).toBe('Published deadline: November 14 at noon CT');
     expect(getProgramAvailability(withDeadline, new Date(withDeadline.deadline.at)).status).toBe('closed');
+  });
+
+  it('explicitly distinguishes an unpublished deadline from no cutoff', () => {
+    const availability = getProgramAvailability(find('dallas-county-welfare'), checked);
+    expect(availability.deadline).toBe('Deadline not published — ask provider.');
+    expect(availability.deadlinePassed).toBe(false);
+    expect(availability.timing).toContain('Deadline not published');
+  });
+
+  it.each(['open', 'closed', 'waitlist', 'call_to_verify', 'unknown'] as const)(
+    'closes expired application windows even when the stored status is %s', (status) => {
+      const program = { ...find('dallas-county-welfare'), status,
+        deadline: { at: '2026-11-13T12:00:00-06:00', label: 'November 13, 2026 at noon CT' } };
+      const availability = getProgramAvailability(program, checked);
+      expect(availability.status).toBe('closed');
+      expect(availability.deadlinePassed).toBe(true);
+      expect(availability.deadline).toBe('Published deadline passed: November 13, 2026 at noon CT');
+      expect(getMatchResults([program], dallas, checked).later[0].program.id).toBe(program.id);
+    },
+  );
+
+  it('uses the exact deadline instant while preserving the published timezone label', () => {
+    const program = { ...find('dallas-county-energy-assistance'),
+      deadline: { at: '2026-11-14T23:30:00-06:00', label: 'November 14, 2026 at 11:30 p.m. CT' } };
+    const before = getProgramAvailability(program, new Date('2026-11-15T05:29:59Z'));
+    const atDeadline = getProgramAvailability(program, new Date('2026-11-15T05:30:00Z'));
+    expect(before.status).toBe('open');
+    expect(before.deadline).toBe('Published deadline: November 14, 2026 at 11:30 p.m. CT');
+    expect(atDeadline.status).toBe('closed');
+    expect(atDeadline.deadline).toContain('November 14, 2026 at 11:30 p.m. CT');
+  });
+
+  it('keeps future reopening guidance beside an expired deadline and verifies a new window', () => {
+    const program = { ...find('under-one-roof-rent'),
+      deadline: { at: '2026-11-10T18:00:00Z', label: 'November 10, 2026 at noon CT' } };
+    const before = getProgramAvailability(program, checked);
+    expect(before.status).toBe('closed');
+    expect(before.timing).toContain('Published deadline passed');
+    expect(before.timing).toContain('Announced reopening: December 1');
+    const reopened = getProgramAvailability(program, new Date('2026-12-02T18:00:00Z'));
+    expect(reopened.status).toBe('call_to_verify');
+    expect(reopened.reopening).toContain('has passed');
+  });
+
+  it('does not automatically reopen an expired window just because the source is old', () => {
+    const program = { ...find('dallas-county-energy-assistance'), status: 'closed' as const,
+      deadline: { at: '2026-11-14T18:00:00Z', label: 'November 14 at noon CT' } };
+    expect(getProgramAvailability(program, new Date('2027-01-01T18:00:00Z')).status).toBe('closed');
   });
 });

@@ -49,11 +49,15 @@ export function getLocationQuestions(programs: Program[], intake: IntakeProfile)
 
 export function getProgramAvailability(program: Program, now = new Date()) {
   const daysSinceCheck = (now.getTime() - Date.parse(program.verifiedAt)) / 86_400_000;
-  const reopeningPassed = program.reopening && now.getTime() >= Date.parse(program.reopening.at);
-  const deadlinePassed = program.deadline && now.getTime() >= Date.parse(program.deadline.at);
+  const reopeningPassed = Boolean(program.reopening && now.getTime() >= Date.parse(program.reopening.at));
+  const deadlinePassed = Boolean(program.deadline && now.getTime() >= Date.parse(program.deadline.at));
+  // An old deadline must not close a newer announced intake window. Once that
+  // reopening arrives, ask the provider rather than assuming intake reopened.
+  const newerReopeningPassed = reopeningPassed && program.reopening && program.deadline &&
+    Date.parse(program.reopening.at) > Date.parse(program.deadline.at);
 
   let status = program.status;
-  if (status === 'open' && deadlinePassed) status = 'closed';
+  if (deadlinePassed && !newerReopeningPassed) status = 'closed';
   else if ((status === 'open' && daysSinceCheck >= 7) ||
     (status === 'closed' && (reopeningPassed || daysSinceCheck >= 30))) status = 'call_to_verify';
 
@@ -66,13 +70,22 @@ export function getProgramAvailability(program: Program, now = new Date()) {
     unknown: 'Intake status unknown',
   };
 
+  // Keep the provider's published label verbatim, including its timezone. Do
+  // not reformat an instant into the device's timezone and change the deadline.
+  const deadline = program.deadline
+    ? `${deadlinePassed ? 'Published deadline passed' : 'Published deadline'}: ${program.deadline.label}`
+    : 'Deadline not published — ask provider.';
+  const reopening = reopeningPassed ? 'The announced reopening has passed. Confirm current intake.'
+    : program.reopening ? 'Announced reopening: ' + program.reopening.label : undefined;
+
   return {
     status,
     label: labels[status],
-    timing: deadlinePassed ? 'The published application deadline has passed.'
-      : program.deadline ? 'Apply by ' + program.deadline.label
-      : reopeningPassed ? 'The announced reopening has passed. Confirm current intake.'
-      : program.reopening ? 'Announced reopening: ' + program.reopening.label : undefined,
+    deadline,
+    deadlinePassed,
+    reopening,
+    reopeningPassed,
+    timing: [deadline, reopening].filter(Boolean).join(' '),
   };
 }
 

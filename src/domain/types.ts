@@ -33,6 +33,8 @@ export type Program = {
   documentNote?: string;
   nextStep: string;
   immediate?: boolean;
+  // `at` is an ISO timestamp with an explicit timezone for comparisons; `label`
+  // preserves the provider's published date/time wording for display.
   reopening?: { at: string; label: string };
   deadline?: { at: string; label: string };
 };

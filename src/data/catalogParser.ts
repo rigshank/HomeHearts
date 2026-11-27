@@ -30,6 +30,14 @@ export function programProblem(value: unknown): string | null {
   if (!isStringArray(value.serviceTypes) || value.serviceTypes.length === 0) return 'serviceTypes must be a non-empty list';
   if (!isStringArray(value.eligibility)) return 'eligibility must be a list';
   if (!Array.isArray(value.requiredDocuments) || !value.requiredDocuments.every((kind) => DOCUMENT_KINDS.includes(kind))) return 'invalid requiredDocuments';
+  for (const key of ['deadline', 'reopening']) {
+    const timing = value[key];
+    if (timing === undefined) continue;
+    if (!isRecord(timing) || !isString(timing.at) || !isString(timing.label) ||
+      !/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(timing.at) || !Number.isFinite(Date.parse(timing.at))) {
+      return `invalid ${key}: expected a timestamp with timezone and a published label`;
+    }
+  }
   const assistance = value.assistance;
   if (!isRecord(assistance) || !isString(assistance.amountLabel) || !isString(assistance.durationLabel) || !isString(assistance.methodLabel)) return 'invalid assistance';
   return null;

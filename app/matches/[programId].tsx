@@ -55,7 +55,6 @@ export default function ProgramDetailScreen() {
       <Reveal>
         <View style={styles.badges}>
           <Pill tone="purple">{SERVICE_LABELS[program.kind]}</Pill>
-          <StatusBadge status={availability.status} label={availability.label} />
         </View>
         <View style={styles.titleRow}>
           <VisualMark icon="home-outline" size="small" label="Housing resource" />
@@ -67,9 +66,21 @@ export default function ProgramDetailScreen() {
         <HText variant="body" color={colors.muted} style={styles.description}>{program.description}</HText>
       </Reveal>
 
+      <Card style={styles.sectionCard}>
+        <HText variant="bodyStrong">Intake status</HText>
+        <View style={styles.badges}>
+          <StatusBadge status={availability.status} label={availability.label} />
+        </View>
+        <HText variant="bodyStrong">Application deadline</HText>
+        <HText variant="body">{availability.deadline}</HText>
+        {availability.reopening && <HText variant="caption">{availability.reopening}</HText>}
+        <HText variant="caption" color={colors.muted}>
+          {program.sourceLabel} · Source checked {formatCatalogDate(program.verifiedAt)}
+        </HText>
+      </Card>
+
       <SectionHeading title="Next step" />
       <Card tone="purple" style={styles.sectionCard}>
-        {availability.timing && <HText variant="bodyStrong">{availability.timing}</HText>}
         <HText variant="body">{availability.status === 'call_to_verify' && program.status !== 'call_to_verify'
           ? 'Check current intake on the official page before preparing an application.'
           : program.nextStep}</HText>
