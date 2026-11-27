@@ -45,7 +45,7 @@ export function TaskCalendar({ program, task, onCancel }: { program: Program; ta
     <Field label={`Task date for ${task.title}`} helper="YYYY-MM-DD. Calendar event: 9 a.m. in your calendar’s local time, for 15 minutes."
       value={date} onChangeText={(value) => { setDate(value); setError(''); setFeedback(''); }}
       placeholder="2026-12-08" maxLength={10} autoCapitalize="none" editable={!busy} error={error || undefined} />
-    <Pressable accessibilityRole="checkbox" accessibilityLabel="Request a 9 a.m. calendar alert" accessibilityState={{ checked: alert, disabled: busy }}
+    <Pressable accessibilityRole="checkbox" accessibilityLabel="Request a 9 a.m. calendar alert" accessibilityState={{ checked: alert, disabled: busy }} aria-checked={alert} aria-disabled={busy}
       disabled={busy} onPress={() => setAlert(!alert)} style={styles.alertOption}>
       <HText variant="bodyStrong" color={colors.primary}>{alert ? '☑' : '☐'} Request a 9 a.m. calendar alert</HText>
     </Pressable>

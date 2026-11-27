@@ -36,8 +36,8 @@ function StartOption({ feature, primary = false, hasPlan = false, onPress }: { f
           <View style={styles.primaryIcon}><Ionicons accessible={false} aria-hidden name={feature.icon} size={23} color={colors.white} /></View>
           <View style={styles.primaryArrow}><Ionicons accessible={false} aria-hidden name="arrow-forward" size={19} color={colors.primary} /></View>
         </View>
-        <HText variant="title" color={colors.white} numberOfLines={1} style={styles.primaryTitle}>{title}</HText>
-        <HText variant="body" color="#F2EDFF" numberOfLines={1} style={styles.primaryDetail}>3 quick questions</HText>
+        <HText variant="title" color={colors.white} style={styles.primaryTitle}>{title}</HText>
+        <HText variant="body" color="#F2EDFF" style={styles.primaryDetail}>3 quick questions</HText>
       </View>
     </Pressable>;
   }
@@ -48,7 +48,7 @@ function StartOption({ feature, primary = false, hasPlan = false, onPress }: { f
       <View style={[styles.optionIcon, { backgroundColor: palette.iconBackground, borderColor: palette.border }]}><Ionicons accessible={false} aria-hidden name={feature.id === 'call' ? 'clipboard-outline' : feature.icon} size={20} color={palette.icon} /></View>
       <View style={[styles.optionArrow, { backgroundColor: palette.iconBackground }]}><Ionicons accessible={false} aria-hidden name="arrow-forward" size={16} color={palette.icon} /></View>
     </View>
-    <HText variant="headline" numberOfLines={2}>{title}</HText>
+    <HText variant="headline">{title}</HText>
   </Pressable>;
 }
 

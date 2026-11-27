@@ -139,10 +139,10 @@ const styles = StyleSheet.create({
   nav: { marginBottom: spacing.lg },
   badges: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.md },
-  titleCopy: { flex: 1, gap: spacing.xs },
+  titleCopy: { flex: 1, minWidth: 0, gap: spacing.xs },
   description: { marginVertical: spacing.md },
   sectionCard: { gap: spacing.sm, marginBottom: spacing.lg },
-  assistanceGrid: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.lg },
+  assistanceGrid: { flexDirection: 'column', gap: spacing.xs, marginBottom: spacing.lg },
   bullet: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' },
   bulletText: { flex: 1 },
 });

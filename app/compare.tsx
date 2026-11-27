@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Card, Field, FloatingBack, HText, OptionButton, Pill, Reveal, Screen, SectionHeading } from '../src/components/ui';
 import { colors, spacing } from '../src/design/tokens';
 import { calculateComparison, formatCurrency } from '../src/domain/cost';
@@ -11,6 +11,8 @@ import { RentBenchmarkCard } from '../src/components/rentBenchmark';
 
 export default function CompareScreen() {
   const router = useRouter();
+  const { width, fontScale } = useWindowDimensions();
+  const stacked = width < 600 || fontScale > 1.2;
   const comparison = useHomeHeartsStore((state) => state.comparison);
   const setComparison = useHomeHeartsStore((state) => state.setComparison);
   const intakeZip = useHomeHeartsStore((state) => state.intake.zipCode);
@@ -57,8 +59,8 @@ export default function CompareScreen() {
     </Reveal>
     <Reveal index={4}>
       <Card style={styles.resultCard}>
-        <View style={styles.resultTop}>
-          <View>
+        <View style={[styles.resultTop, stacked && styles.stacked]}>
+          <View style={styles.resultTotal}>
             <HText variant="caption" color={colors.muted}>AFTER {comparison.horizonMonths} MONTHS</HText>
             <HText variant="title">{formatCurrency(result.stayTotalCents)}</HText>
             <HText variant="caption" color={colors.muted}>if you stay</HText>
@@ -66,7 +68,7 @@ export default function CompareScreen() {
           <Pill tone={result.moveTotalCents < result.stayTotalCents ? 'success' : 'coral'}>{result.moveTotalCents < result.stayTotalCents ? 'Move is lower' : 'Stay is lower'}</Pill>
         </View>
         <MiniChart result={result} />
-        <View style={styles.metrics}>
+        <View style={[styles.metrics, stacked && styles.stacked]}>
           <MetricTile icon="home-outline" label="Stay" value={formatCurrency(result.stayTotalCents)} />
           <MetricTile icon="navigate-outline" label="Move" value={formatCurrency(result.moveTotalCents)} tone="coral" />
           <MetricTile icon="time-outline" label="Break-even" value={result.breakEvenMonth ? `Month ${result.breakEvenMonth}` : 'Not in range'} tone="neutral" />
@@ -76,7 +78,7 @@ export default function CompareScreen() {
     </Reveal>
     <SectionHeading eyebrow="NEXT STEP" title="Get support" />
     <Reveal index={4}>
-      <View style={styles.nextGrid}>
+      <View style={[styles.nextGrid, stacked && styles.stacked]}>
         <Card tone="purple" style={styles.nextCard} pressableStyle={styles.nextCardPressable} onPress={() => { const increase = comparison.monthlyStayAfterIncreaseCents - comparison.monthlyStayCents; useHomeHeartsStore.getState().setIntake({ issue: 'rent_increase', rentIncreaseCents: increase > 0 ? increase : undefined }); router.push('/intake'); }}>
           <Ionicons accessible={false} aria-hidden name="home-outline" size={22} color={colors.primary} />
           <HText variant="bodyStrong">Help to stay</HText>
@@ -97,7 +99,7 @@ function parseMoney(value: string) { const parsed = Number(value.replace(/[^0-9.
 function MiniChart({ result }: { result: ReturnType<typeof calculateComparison> }) {
   const points = result.points.length > 3 ? [result.points[0], result.points[Math.floor(result.points.length / 2) - 1], result.points[result.points.length - 1]] : result.points;
   const max = Math.max(...points.flatMap((point) => [point.stayCents, point.moveCents]), 1);
-  return <View style={styles.chart} accessibilityLabel="Cost comparison chart"><View style={styles.chartLegend}><View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.primary }]} /><HText variant="caption" color={colors.muted}>Stay</HText></View><View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.coral }]} /><HText variant="caption" color={colors.muted}>Move</HText></View></View><View style={styles.scale}><HText variant="micro" color={colors.muted}>$0</HText><HText variant="micro" color={colors.muted}>{formatCurrency(max)}</HText></View><View style={styles.bars}>{points.map((point) => <View style={styles.barGroup} key={point.month}><View style={styles.barPair}><View style={[styles.bar, { height: Math.max(8, (point.stayCents / max) * 122), backgroundColor: colors.primary }]} /><View style={[styles.bar, { height: Math.max(8, (point.moveCents / max) * 122), backgroundColor: colors.coral }]} /></View><HText variant="micro" color={colors.muted}>M{point.month}</HText></View>)}</View><View style={styles.axis}><HText variant="micro" color={colors.muted}>TOTAL COST</HText><HText variant="micro" color={colors.muted}>HORIZON →</HText></View><View style={styles.dataTable}>{points.map((point) => <View style={styles.dataRow} key={`row-${point.month}`}><HText variant="caption" color={colors.muted}>Month {point.month}</HText><HText variant="caption" color={colors.primary}>{formatCurrency(point.stayCents)}</HText><HText variant="caption" color={colors.coral}>{formatCurrency(point.moveCents)}</HText></View>)}</View></View>;
+  return <View style={styles.chart} accessibilityLabel="Cost comparison chart"><View style={styles.chartLegend}><View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.primary }]} /><HText variant="caption" color={colors.muted}>Stay</HText></View><View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: colors.coral }]} /><HText variant="caption" color={colors.muted}>Move</HText></View></View><View style={styles.scale}><HText variant="micro" color={colors.muted}>$0</HText><HText variant="micro" color={colors.muted}>{formatCurrency(max)}</HText></View><View style={styles.bars}>{points.map((point) => <View style={styles.barGroup} key={point.month}><View style={styles.barPair}><View style={[styles.bar, { height: Math.max(8, (point.stayCents / max) * 122), backgroundColor: colors.primary }]} /><View style={[styles.bar, { height: Math.max(8, (point.moveCents / max) * 122), backgroundColor: colors.coral }]} /></View><HText variant="micro" color={colors.muted}>M{point.month}</HText></View>)}</View><View style={styles.axis}><HText variant="micro" color={colors.muted}>TOTAL COST</HText><HText variant="micro" color={colors.muted}>HORIZON →</HText></View><View style={styles.dataTable}>{points.map((point) => <View style={styles.dataRow} key={`row-${point.month}`}><HText variant="caption" color={colors.muted}>Month {point.month}</HText><HText variant="caption" color={colors.primary}>Stay: {formatCurrency(point.stayCents)}</HText><HText variant="caption" color={colors.coralInk}>Move: {formatCurrency(point.moveCents)}</HText></View>)}</View></View>;
 }
 
 const styles = StyleSheet.create({
@@ -107,24 +109,24 @@ const styles = StyleSheet.create({
   title: { marginTop: spacing.xs, marginBottom: spacing.sm },
   horizonSection: { marginTop: spacing.xl, marginBottom: spacing.lg },
   horizonHeading: { gap: 3, marginBottom: spacing.sm },
-  horizonRow: { flexDirection: 'row', gap: spacing.sm },
-  horizonOption: { width: '48%', minWidth: 0, flexGrow: 0, flexShrink: 1, marginBottom: 0, padding: spacing.sm },
+  horizonRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  horizonOption: { flexBasis: 140, minWidth: 0, flexGrow: 1, maxWidth: '100%', flexShrink: 1, marginBottom: 0, padding: spacing.sm },
   inputCard: { gap: spacing.xs, marginBottom: spacing.lg },
   resultCard: { marginBottom: spacing.xxl, gap: spacing.md },
-  resultTop: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.sm },
+  resultTotal: { flexShrink: 1, minWidth: 0, maxWidth: '100%' }, stacked: { flexDirection: 'column' }, resultTop: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: spacing.sm },
   metrics: { flexDirection: 'row', gap: spacing.xs },
   chart: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md },
-  chartLegend: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.sm },
+  chartLegend: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginBottom: spacing.sm },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
   scale: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.xs },
-  bars: { height: 154, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around' },
+  bars: { minHeight: 154, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around' },
   barGroup: { alignItems: 'center', gap: 7 },
   barPair: { height: 128, flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
   bar: { width: 16, borderRadius: 6 },
   axis: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.xs },
   dataTable: { borderTopWidth: 1, borderTopColor: colors.border, marginTop: spacing.md, paddingTop: spacing.sm, gap: 6 },
-  dataRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  dataRow: { gap: spacing.xxs, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: spacing.xs },
   warning: { flexDirection: 'row', gap: 5, alignItems: 'flex-start' },
   nextGrid: { flexDirection: 'row', gap: spacing.sm },
   nextCardPressable: { flex: 1, minWidth: 0 },
