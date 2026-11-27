@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DALLAS_PROGRAMS } from '../data/programs';
-import { createPlanTasks, markDocumentTaskDone, nextDueLabel, updatePlanTasks } from './planning';
+import { createPlanTasks, markDocumentTaskDone, setTaskDate, updatePlanTasks } from './planning';
 
 describe('createPlanTasks', () => {
   it('creates document, call, and follow-up tasks without implying submission', () => {
@@ -22,15 +22,38 @@ describe('createPlanTasks', () => {
   });
 });
 
-describe('nextDueLabel', () => {
-  it('cycles through due dates and wraps back to Today', () => {
-    expect(nextDueLabel('Today')).toBe('Tomorrow');
-    expect(nextDueLabel('This week')).toBe('Next week');
-    expect(nextDueLabel('Next week')).toBe('Today');
+describe('task dates', () => {
+  const now = new Date(2026, 10, 27, 12);
+
+  it('anchors suggested dates once, preserving saved dates and export history across refreshes', () => {
+    const program = DALLAS_PROGRAMS[0];
+    const tasks = createPlanTasks(program, now);
+    expect(tasks[0].dueDate).toBe('2026-11-27');
+    expect(tasks[1].dueDate).toBe('2026-11-28');
+    expect(tasks[2].dueDate).toBe('2026-11-30');
+    expect(tasks.find((task) => task.id === 'follow-up')?.dueDate).toBeUndefined();
+    tasks[0].calendarExportedDate = '2026-11-27';
+    const refreshed = updatePlanTasks(program, tasks, new Date(2026, 11, 5));
+    expect(refreshed[0]).toMatchObject({ dueDate: '2026-11-27', calendarExportedDate: '2026-11-27' });
   });
 
-  it('leaves the after-call follow-up label unchanged', () => {
-    expect(nextDueLabel('After your call')).toBe('After your call');
+  it('migrates undated legacy tasks while leaving after-call follow-ups for the user to date', () => {
+    const program = DALLAS_PROGRAMS[0];
+    const legacy = createPlanTasks(program).map(({ dueDate, ...task }) => task);
+    legacy[0].dueLabel = 'Next week';
+    const migrated = updatePlanTasks(program, legacy, now);
+    expect(migrated[0].dueDate).toBe('2026-12-04');
+    expect(migrated.find((task) => task.id === 'follow-up')?.dueDate).toBeUndefined();
+    expect(updatePlanTasks(program, migrated, new Date(2026, 11, 9))).toEqual(migrated);
+  });
+
+  it('reschedules only the selected task and retains the old calendar date for change guidance', () => {
+    const tasks = createPlanTasks(DALLAS_PROGRAMS[0], now);
+    tasks[0].calendarExportedDate = '2026-11-27';
+    const updated = setTaskDate(tasks, tasks[0].id, '2026-12-08');
+    expect(updated[0]).toMatchObject({ dueDate: '2026-12-08', calendarExportedDate: '2026-11-27' });
+    expect(updated.slice(1)).toEqual(tasks.slice(1));
+    expect(() => setTaskDate(tasks, tasks[0].id, '2026-02-30')).toThrow('real date');
   });
 });
 

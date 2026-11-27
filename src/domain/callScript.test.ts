@@ -69,6 +69,29 @@ describe('buildCallScript', () => {
     expect(buildCallScript(withDeadline, base, checked).questions[0]).toContain('November 20 at noon CT');
   });
 
+  it('asks for a cutoff when none is published without claiming applications are always open', () => {
+    const questions = buildCallScript(find('dallas-county-welfare'), base, checked).questions;
+    expect(questions.join(' ')).toContain('I don’t have a published application deadline. Is there a cutoff date or an intake window');
+  });
+
+  it('asks about a new window after expiry instead of encouraging an application before a past date', () => {
+    const program = { ...find('dallas-county-energy-assistance'),
+      deadline: { at: '2026-11-10T18:00:00Z', label: 'November 10 at noon CT' } };
+    const first = buildCallScript(program, base, checked).questions[0];
+    expect(first).toContain('November 10 at noon CT, which has passed');
+    expect(first).toContain('new window');
+    expect(first).not.toContain('can I apply before then');
+  });
+
+  it('checks a published deadline even if intake is stale or waitlisted', () => {
+    for (const status of ['call_to_verify', 'waitlist', 'closed'] as const) {
+      const program = { ...find('dallas-county-energy-assistance'), status,
+        deadline: { at: '2026-11-20T18:00:00Z', label: 'November 20 at noon CT' } };
+      const text = buildCallScript(program, base, checked).questions.join(' ');
+      expect(text).toContain('November 20 at noon CT. Does that date still apply');
+    }
+  });
+
   it('asks about the amount only when the provider does not publish one', () => {
     expect(buildCallScript(find('dallas-county-welfare'), base, checked).questions.join(' ')).toContain('doesn’t say how much help is available');
     expect(buildCallScript(find('texas-211'), base, checked).questions.join(' ')).not.toContain('how much help');

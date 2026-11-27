@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useCallback, useEffect } from 'react';
+import { BackHandler, Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Button, Field, FloatingBack, HText, IssueTile, OptionButton, ProgressBar, Reveal, Screen } from '../src/components/ui';
 import { colors, spacing } from '../src/design/tokens';
 import { getLocationQuestions } from '../src/domain/matching';
@@ -10,6 +10,8 @@ import { IssueType, Urgency } from '../src/domain/types';
 import { useCatalogStore } from '../src/state/useCatalogStore';
 import { useHomeHeartsStore } from '../src/state/useHomeHeartsStore';
 import { getIssueTileColumns } from '../src/components/visualLayout';
+import { getIntakeStep, getRequestedIntakeStep } from '../src/navigation/intake';
+import { goBackSafely } from '../src/navigation/back';
 
 const issues: { value: IssueType; title: string; description: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { value: 'rent_increase', title: 'Rent went up', description: 'I need help staying in my current home.', icon: 'trending-up-outline' },
@@ -36,8 +38,22 @@ export default function IntakeScreen() {
   const { width } = useWindowDimensions();
   const intake = useHomeHeartsStore((state) => state.intake);
   const setIntake = useHomeHeartsStore((state) => state.setIntake);
-  const { location } = useLocalSearchParams<{ location?: string }>();
-  const [step, setStep] = useState(location === '1' ? 2 : 0);
+  const params = useLocalSearchParams<{ step?: string; location?: string; from?: string }>();
+  const step = getIntakeStep(params, intake);
+  useEffect(() => {
+    // Wait for saved answers before normalizing a direct link. Pin an
+    // incomplete link to the first missing question so choosing an answer
+    // cannot unexpectedly advance the user without pressing Continue.
+    const normalizeStep = () => {
+      const safeStep = getIntakeStep(params, useHomeHeartsStore.getState().intake);
+      if (safeStep !== getRequestedIntakeStep(params)) {
+        router.setParams({ step: String(safeStep), location: undefined });
+      }
+    };
+    const unsubscribe = useHomeHeartsStore.persist.onFinishHydration(normalizeStep);
+    if (useHomeHeartsStore.persist.hasHydrated()) normalizeStep();
+    return unsubscribe;
+  }, [router, params.step, params.location]);
   const programs = useCatalogStore((state) => state.programs);
   const questions = getLocationQuestions(programs, intake);
   const needsCounty = questions.counties.length > 0;
@@ -49,18 +65,37 @@ export default function IntakeScreen() {
   ][step];
   const issueColumns = getIssueTileColumns(width);
 
+  const previousQuestion = useCallback(() => {
+    if (step > 0) router.setParams({ step: String(step - 1), location: undefined });
+    else if (params.from === 'matches') router.dismissTo('/matches');
+    else goBackSafely(router);
+  }, [router, step, params.from]);
+
+  useFocusEffect(useCallback(() => {
+    if (Platform.OS !== 'android') return;
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (step > 0 || params.from === 'matches' || !router.canGoBack()) {
+        previousQuestion();
+        return true;
+      }
+      return false;
+    });
+    return () => subscription.remove();
+  }, [router, step, params.from, previousQuestion]));
+
   function continueFlow() {
-    if (step < 2) setStep(step + 1);
-    else router.replace('/matches');
+    if (!canContinue) return;
+    if (step < 2) router.setParams({ step: String(step + 1), location: undefined });
+    else router.dismissTo('/matches');
   }
 
   return (
-    <Screen bottomAction={
+    <Screen key={step} bottomAction={
       <Button disabled={!canContinue} onPress={continueFlow} icon={step === 2 ? 'sparkles-outline' : 'arrow-forward'}>
         {step === 2 ? 'Show my matches' : 'Continue'}
       </Button>
     }>
-      <View style={styles.nav}><FloatingBack /></View>
+      <View style={styles.nav}><FloatingBack onPress={previousQuestion} label={step > 0 ? 'Previous question' : params.from === 'matches' ? 'Back to matches' : 'Go back'} /></View>
       <Reveal>
         <HText variant="micro" color={colors.primary}>STEP {step + 1} OF 3</HText>
         <HText variant="title" style={styles.title}>{STEP_TITLES[step]}</HText>

@@ -28,6 +28,19 @@ describe('bundled catalog', () => {
 });
 
 describe('parseCatalog', () => {
+  it.each(['deadline', 'reopening'])(
+    'rejects malformed or timezone-ambiguous %s data and accepts explicit offsets', (key) => {
+      const program = clone(BUNDLED_CATALOG.programs[0]);
+      for (const timing of [null, {}, { at: '2026-11-14', label: 'November 14' },
+        { at: '2026-11-14T12:00:00', label: 'No timezone' },
+        { at: 'invalidZ', label: 'Invalid date' }, { at: '2026-11-14T18:00:00Z' }]) {
+        expect(programProblem({ ...program, [key]: timing })).toContain(`invalid ${key}`);
+      }
+      expect(programProblem({ ...program, [key]: { at: '2026-11-14T12:00:00-06:00', label: 'November 14 at noon CT' } })).toBeNull();
+      expect(programProblem({ ...program, [key]: { at: '2026-11-14T18:00:00Z', label: 'November 14 at noon CT' } })).toBeNull();
+    },
+  );
+
   it('skips a malformed program and keeps the rest', () => {
     const catalog = clone(BUNDLED_CATALOG) as any;
     catalog.programs[0].status = 'opne';

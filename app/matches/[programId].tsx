@@ -26,7 +26,7 @@ export default function ProgramDetailScreen() {
   const national211 = useCatalogStore((state) => state.national211);
   const program = allPrograms.find((item) => item.id === programId);
   if (!program) {
-    return <Screen><FloatingBack /><HText variant="title">This program is unavailable.</HText>
+    return <Screen><FloatingBack fallback="/matches" /><HText variant="title">This program is unavailable.</HText>
       <Button onPress={() => router.replace('/matches')}>Back to matches</Button></Screen>;
   }
   const now = new Date();
@@ -51,11 +51,10 @@ export default function ProgramDetailScreen() {
 
   return (
     <Screen>
-      <View style={styles.nav}><FloatingBack /></View>
+      <View style={styles.nav}><FloatingBack fallback="/matches" /></View>
       <Reveal>
         <View style={styles.badges}>
           <Pill tone="purple">{SERVICE_LABELS[program.kind]}</Pill>
-          <StatusBadge status={availability.status} label={availability.label} />
         </View>
         <View style={styles.titleRow}>
           <VisualMark icon="home-outline" size="small" label="Housing resource" />
@@ -67,9 +66,21 @@ export default function ProgramDetailScreen() {
         <HText variant="body" color={colors.muted} style={styles.description}>{program.description}</HText>
       </Reveal>
 
+      <Card style={styles.sectionCard}>
+        <HText variant="bodyStrong">Intake status</HText>
+        <View style={styles.badges}>
+          <StatusBadge status={availability.status} label={availability.label} />
+        </View>
+        <HText variant="bodyStrong">Application deadline</HText>
+        <HText variant="body">{availability.deadline}</HText>
+        {availability.reopening && <HText variant="caption">{availability.reopening}</HText>}
+        <HText variant="caption" color={colors.muted}>
+          {program.sourceLabel} · Source checked {formatCatalogDate(program.verifiedAt)}
+        </HText>
+      </Card>
+
       <SectionHeading title="Next step" />
       <Card tone="purple" style={styles.sectionCard}>
-        {availability.timing && <HText variant="bodyStrong">{availability.timing}</HText>}
         <HText variant="body">{availability.status === 'call_to_verify' && program.status !== 'call_to_verify'
           ? 'Check current intake on the official page before preparing an application.'
           : program.nextStep}</HText>
@@ -128,10 +139,10 @@ const styles = StyleSheet.create({
   nav: { marginBottom: spacing.lg },
   badges: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.md },
-  titleCopy: { flex: 1, gap: spacing.xs },
+  titleCopy: { flex: 1, minWidth: 0, gap: spacing.xs },
   description: { marginVertical: spacing.md },
   sectionCard: { gap: spacing.sm, marginBottom: spacing.lg },
-  assistanceGrid: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.lg },
+  assistanceGrid: { flexDirection: 'column', gap: spacing.xs, marginBottom: spacing.lg },
   bullet: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' },
   bulletText: { flex: 1 },
 });

@@ -2,10 +2,10 @@ import { Platform } from 'react-native';
 
 export const colors = {
   canvas: '#F8F7FB', surface: '#FFFFFF', surfaceMuted: '#F3F0FA', surfaceStrong: '#EEE9FF',
-  ink: '#211F2B', muted: '#746F80', mutedStrong: '#5F596D', border: '#E4DFEC',
+  ink: '#211F2B', muted: '#696373', mutedStrong: '#5F596D', border: '#E4DFEC',
   brand: '#1685E5', brandDark: '#0F64B6', brandSoft: '#E8F4FF', brandBorder: '#A9D7FA',
-  primary: '#6C4EE3', primaryDark: '#5037B4', primarySoft: '#EEE9FF', coral: '#FF7766', coralSoft: '#FFF0ED',
-  success: '#2B8C6B', successSoft: '#EAF7F1', warning: '#A8641A', warningSoft: '#FFF6E6',
+  primary: '#6C4EE3', primaryDark: '#5037B4', primarySoft: '#EEE9FF', coral: '#FF7766', coralInk: '#A83D30', coralSoft: '#FFF0ED',
+  success: '#216F54', successSoft: '#EAF7F1', warning: '#925313', warningSoft: '#FFF6E6',
   danger: '#B93835', dangerSoft: '#FDEDEC', white: '#FFFFFF', shadow: '#302550',
   harborDeep: '#281653', harborViolet: '#5B38C4', harborLavender: '#BCA2FF', harborWater: '#4630A7', harborGlow: '#FFE5B4',
 };

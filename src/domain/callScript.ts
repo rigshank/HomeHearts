@@ -33,12 +33,15 @@ function buildIntro(program: Program, intake: IntakeProfile) {
   return `Hi, I’m calling about ${about}. I’m ${situation}${where}. ${goal}`;
 }
 
-function availabilityQuestion(program: Program, status: string, hasTiming: boolean) {
-  switch (status) {
+function availabilityQuestion(program: Program, availability: ReturnType<typeof getProgramAvailability>) {
+  if (availability.deadlinePassed && program.deadline) {
+    return `I saw a published application deadline of ${program.deadline.label}, which has passed. Are you accepting applications in a new window, or should I wait?`;
+  }
+  switch (availability.status) {
     case 'open':
       return program.deadline ? `I saw an application deadline of ${program.deadline.label}. Are you still accepting applications, and can I apply before then?` : 'Are you still accepting applications right now?';
     case 'closed':
-      return program.reopening && hasTiming
+      return program.reopening && !availability.reopeningPassed
         ? `Your website says intake is closed and is expected to reopen ${program.reopening.label}. Is that still the plan, and how do I apply when it opens?`
         : 'Your website says intake is closed. When might it reopen, and is there a waitlist or another option in the meantime?';
     case 'waitlist':
@@ -58,7 +61,12 @@ function availabilityQuestion(program: Program, status: string, hasTiming: boole
  */
 export function buildCallScript(program: Program, intake: IntakeProfile, now = new Date()): CallScript {
   const availability = getProgramAvailability(program, now);
-  const questions = [availabilityQuestion(program, availability.status, Boolean(availability.timing))];
+  const questions = [availabilityQuestion(program, availability)];
+  if (!program.deadline) {
+    questions.push('I don’t have a published application deadline. Is there a cutoff date or an intake window I should know about?');
+  } else if (!availability.deadlinePassed && availability.status !== 'open') {
+    questions.push(`I saw an application deadline of ${program.deadline.label}. Does that date still apply, and when can I apply?`);
+  }
 
   // A referral service points you to other providers, which set their own rules.
   if (program.eligibilityToConfirm) questions.push(`Can you tell me whether I qualify based on ${lowerFirst(program.eligibilityToConfirm)}?`);

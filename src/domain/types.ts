@@ -33,6 +33,8 @@ export type Program = {
   documentNote?: string;
   nextStep: string;
   immediate?: boolean;
+  // `at` is an ISO timestamp with an explicit timezone for comparisons; `label`
+  // preserves the provider's published date/time wording for display.
   reopening?: { at: string; label: string };
   deadline?: { at: string; label: string };
 };
@@ -52,7 +54,7 @@ export type ComparisonInput = { monthlyStayCents: number; monthlyStayAfterIncrea
 export type ComparisonPoint = { month: number; stayCents: number; moveCents: number };
 export type ComparisonResult = { horizonMonths: 3 | 12; stayTotalCents: number; moveTotalCents: number; breakEvenMonth: number | null; points: ComparisonPoint[]; warnings: string[] };
 export type DocumentRecord = { kind: DocumentKind; state: DocumentUploadState; name?: string; mimeType?: string; sizeBytes?: number; localUri?: string; remotePath?: string; storageMode?: 'local_cache' | 'supabase_private'; updatedAt?: string; errorMessage?: string };
-export type PlanTask = { id: string; title: string; detail: string; dueLabel: string; status: TaskStatus; source: 'document' | 'call' | 'application' | 'follow_up' };
+export type PlanTask = { id: string; title: string; detail: string; dueLabel: string; dueDate?: string; calendarExportedDate?: string; status: TaskStatus; source: 'document' | 'call' | 'application' | 'follow_up' };
 
 export const DOCUMENT_LABELS: Record<DocumentKind, string> = {
   photo_id: 'Photo ID', lease_or_rent_notice: 'Lease or rent notice', income_proof: 'Income proof', rent_increase_notice: 'Rent increase notice',

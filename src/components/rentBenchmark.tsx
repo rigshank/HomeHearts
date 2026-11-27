@@ -27,7 +27,7 @@ export function RentBenchmarkCard({ initialZip, onUse }: { initialZip: string; o
         {BEDROOM_OPTIONS.map((option) => {
           const selected = option.value === bedrooms;
           return (
-            <Pressable key={option.value} accessibilityRole="radio" accessibilityLabel={option.label} accessibilityState={{ selected }}
+            <Pressable key={option.value} accessibilityRole="radio" accessibilityLabel={option.label} accessibilityState={{ checked: selected }} aria-checked={selected}
               onPress={() => { setBedrooms(option.value); setApplied(null); }}
               style={({ pressed }) => [styles.chip, selected && styles.chipSelected, pressed && styles.pressed]}>
               <HText variant="caption" color={selected ? colors.primaryDark : colors.mutedStrong}>{option.label}</HText>
