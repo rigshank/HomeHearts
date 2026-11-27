@@ -61,6 +61,18 @@ For a simulator or emulator, follow Expo's [iOS Simulator setup](https://docs.ex
 2. **Find assistance.** Choose **Find help now**, select **Rent went up** and **This week**, and enter `75201` as the ZIP code. Choose **Show my matches**, then open a result for its service area, intake status, eligibility, and official source. Results depend on the issue, ZIP code, and date. Use **Options for later** for closed programs and waitlists.
 3. **Prepare and save a plan.** From that rent search, open **Dallas County Welfare Assistance** and scroll to **Prepare documents**. Add a sample PDF or image, then choose **View plan** to review your checklist. Use **Open call script** to see and copy the sample script. Use sample files for the demo and stop before calling a real provider.
 
+## Optional task dates and calendar export
+
+In **My plan**, choose **Date & calendar** on an incomplete task. Enter a real date as `YYYY-MM-DD`, then choose **Save task date** or **Export calendar file (.ics)**. The date stays saved locally after reopening the app. Initial dates are personal planning suggestions, not provider deadlines: Today/Tomorrow use those dates, This week suggests three days ahead, and Next week suggests seven days ahead. Older undated plans receive these suggestions once when reopened; review them. After-call tasks need a date chosen by you.
+
+An exported event contains that task's title, provider name and next step, for 15 minutes at **9 a.m. in your calendar's local time**. It does not include attached files, filenames or your intake answers. Choose a calendar whose sharing/privacy settings you are comfortable with. The optional **Request a 9 a.m. calendar alert** checkbox is off by default; alerts for a time already passed are rejected.
+
+**Browser:** export requests a local `.ics` download. Open/import it with a compatible calendar app or its import command. Browser download restrictions and calendar import support vary. **Android/iOS:** HomeHearts attempts to open the file with the system viewer/compatible app; a viewer may not support calendar import. If no compatible app/import is available, use the browser download or create the event manually. No calendar/account access or notification permission is requested by HomeHearts, and no new native module is required.
+
+**Importing and alerts are your calendar's responsibility.** Review/confirm the event and alert there; some apps ignore imported alarms, and calendar/OS notification settings can prevent alerts. Export success means only that a file download/open was requested, not that an event or alert was scheduled. HomeHearts sends no notifications and cannot confirm an import.
+
+**Changes do not sync.** After changing a task date, completing or skipping a task, edit/delete its old event and alert in your calendar. Export the new date if needed, deleting the old event first because repeated imports can create duplicates. The plan displays the last exported file date and flags date changes or completed/skipped tasks. Closing export options creates no calendar file or alert. Temporary native export files are held in the app cache.
+
 ## Troubleshooting
 
 - **npm can't find package.json.** Open the extracted or cloned project folder that contains both `package.json` and `package-lock.json`, then run `npm ci` again.
