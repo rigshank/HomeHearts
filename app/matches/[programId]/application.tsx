@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Linking, Platform, StyleSheet, View } from 'react-native';
 import { File } from 'expo-file-system';
 import { Button, Card, FloatingBack, HText, Pill, Reveal, Screen, SectionHeading } from '../../../src/components/ui';
@@ -8,8 +8,9 @@ import { colors, radii, spacing } from '../../../src/design/tokens';
 import { useCatalogStore } from '../../../src/state/useCatalogStore';
 import { DOCUMENT_HINTS, DOCUMENT_LABELS, DocumentKind } from '../../../src/domain/types';
 import { pickAndStageDocument, removeStagedDocument } from '../../../src/data/uploadRepository';
-import { createPlanTasks, markDocumentTaskDone } from '../../../src/domain/planning';
+import { markDocumentTaskDone } from '../../../src/domain/planning';
 import { useHomeHeartsStore } from '../../../src/state/useHomeHeartsStore';
+import { ProgramRecovery } from '../../../src/components/programRecovery';
 import { VisualMark } from '../../../src/components/visuals';
 
 export default function ApplicationPrepScreen() {
@@ -20,14 +21,32 @@ export default function ApplicationPrepScreen() {
   const documents = useHomeHeartsStore((state) => state.documents);
   const upsertDocument = useHomeHeartsStore((state) => state.upsertDocument);
   const setPlanTasks = useHomeHeartsStore((state) => state.setPlanTasks);
-  const setSavedPlanProgram = useHomeHeartsStore((state) => state.setSavedPlanProgram);
+  const startPlan = useHomeHeartsStore((state) => state.startPlan);
   const savedPlanProgramId = useHomeHeartsStore((state) => state.savedPlanProgramId);
   const removeDocument = useHomeHeartsStore((state) => state.removeDocument);
   const [busyKind, setBusyKind] = useState<DocumentKind | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  useEffect(() => { if (program && savedPlanProgramId !== program.id) { setSavedPlanProgram(program.id); setPlanTasks(createPlanTasks(program)); } }, [program, savedPlanProgramId, setPlanTasks, setSavedPlanProgram]);
-  if (!program) return <Screen><FloatingBack fallback="/matches" /><HText variant="title">Program unavailable.</HText></Screen>;
-  const addDocument = async (kind: DocumentKind) => { setBusyKind(kind); setUploadError(null); try { const record = await pickAndStageDocument(kind); if (record) { const previous = documents[kind]; if (previous) { try { await removeStagedDocument(previous); } catch (error) { setUploadError(error instanceof Error ? error.message : 'The previous file could not be removed.'); } } upsertDocument(record); setPlanTasks(markDocumentTaskDone(useHomeHeartsStore.getState().planTasks, kind)); } } catch (error) { setUploadError(error instanceof Error ? error.message : 'The file could not be added. Please try again.'); } finally { setBusyKind(null); } };
+  const [planError, setPlanError] = useState<string | null>(null);
+  const currentProgram = allPrograms.find((item) => item.id === savedPlanProgramId);
+  if (!program) return <ProgramRecovery />;
+  if (savedPlanProgramId !== program.id) return <Screen contentStyle={{ gap: spacing.md }}>
+    <FloatingBack fallback="/matches" />
+    <HText variant="title">{savedPlanProgramId ? 'Replace your saved plan?' : 'Start your plan'}</HText>
+    <HText variant="bodyStrong">{program.name}</HText>
+    <HText color={colors.muted}>{savedPlanProgramId
+      ? `Your current checklist is for ${currentProgram?.name ?? 'an unavailable provider'}. HomeHearts saves one plan at a time. Replacing it resets completed/skipped steps, task dates and calendar export history. Your documents stay on this device. Events already imported into your calendar must be edited or removed there.`
+      : 'Create a checklist for this provider. Your documents will stay on this device; nothing is submitted.'}</HText>
+    {planError && <HText accessibilityLiveRegion="polite" aria-live="polite" color={colors.danger}>{planError}</HText>}
+    <Button onPress={() => {
+      const latest = useCatalogStore.getState().allPrograms.find((item) => item.id === program.id);
+      if (!latest) { setPlanError('This provider is no longer available. Return to matches or retry after refreshing the provider list.'); return; }
+      const result = startPlan(latest, savedPlanProgramId);
+      setPlanError(result.ok ? null : result.error);
+    }}>{planError ? 'Retry starting plan' : savedPlanProgramId ? 'Replace plan and continue' : 'Start plan'}</Button>
+    {savedPlanProgramId && <Button variant="secondary" onPress={() => router.replace('/plan')}>Keep current plan</Button>}
+    <Button variant="ghost" onPress={() => router.replace('/matches')}>Return to matches</Button>
+  </Screen>;
+  const addDocument = async (kind: DocumentKind) => { setBusyKind(kind); setUploadError(null); try { const record = await pickAndStageDocument(kind); if (record) { const previous = documents[kind]; if (previous) { try { await removeStagedDocument(previous); } catch (error) { setUploadError(error instanceof Error ? error.message : 'The previous file could not be removed.'); } } upsertDocument(record); setPlanTasks(program.id, markDocumentTaskDone(useHomeHeartsStore.getState().savedPlanProgramId === program.id ? useHomeHeartsStore.getState().planTasks : [], kind)); } } catch (error) { setUploadError(error instanceof Error ? error.message : 'The file could not be added. Please try again.'); } finally { setBusyKind(null); } };
   const removeDocumentFile = async (kind: DocumentKind) => { const record = documents[kind]; if (!record) return; setBusyKind(kind); setUploadError(null); try { await removeStagedDocument(record); removeDocument(kind); } catch (error) { setUploadError(error instanceof Error ? error.message : 'The file could not be removed.'); } finally { setBusyKind(null); } };
   const previewDocument = async (kind: DocumentKind) => {
     const record = documents[kind];

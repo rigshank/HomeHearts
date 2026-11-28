@@ -1,3 +1,4 @@
+import { ProgramRecovery } from '../../src/components/programRecovery';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -25,10 +26,7 @@ export default function ProgramDetailScreen() {
   const allPrograms = useCatalogStore((state) => state.allPrograms);
   const national211 = useCatalogStore((state) => state.national211);
   const program = allPrograms.find((item) => item.id === programId);
-  if (!program) {
-    return <Screen><FloatingBack fallback="/matches" /><HText variant="title">This program is unavailable.</HText>
-      <Button onPress={() => router.replace('/matches')}>Back to matches</Button></Screen>;
-  }
+  if (!program) return <ProgramRecovery />;
   const now = new Date();
   const availability = getProgramAvailability(program, now);
   const { actionable, later } = getMatchResults([program], intake, now, national211);
