@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { getIntakeStep } from './intake';
 import type { IntakeProfile } from '../domain/types';
 
-const answers: IntakeProfile = { issue: 'rent_increase', urgency: 'this_week', zipCode: '75201' };
+const answers: IntakeProfile = { issue: 'rent_increase', urgency: 'within_7_days', zipCode: '75201' };
 
 describe('intake step links', () => {
   it('reopens the requested question with saved answers, including older location links', () => {

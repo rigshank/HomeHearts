@@ -6,7 +6,8 @@ import { Button, Field, FloatingBack, HText, IssueTile, OptionButton, ProgressBa
 import { colors, spacing } from '../src/design/tokens';
 import { getLocationQuestions } from '../src/domain/matching';
 import { COUNTY_LABELS, isZipCode } from '../src/domain/serviceArea';
-import { IssueType, Urgency } from '../src/domain/types';
+import { getConcerns, toggleConcern, URGENCY_OPTIONS } from '../src/domain/intake';
+import { IssueType } from '../src/domain/types';
 import { useCatalogStore } from '../src/state/useCatalogStore';
 import { useHomeHeartsStore } from '../src/state/useHomeHeartsStore';
 import { getIssueTileColumns } from '../src/components/visualLayout';
@@ -26,17 +27,14 @@ const issues: { value: IssueType; title: string; description: string; icon: keyo
   { value: 'veteran', title: 'Veteran housing', description: 'I need veteran-specific housing resources.', icon: 'ribbon-outline' },
   { value: 'youth', title: 'Youth housing', description: 'I need youth-focused support or shelter.', icon: 'people-outline' },
 ];
-const urgencies: { value: Urgency; title: string; description: string }[] = [
-  { value: 'today', title: 'Today', description: 'I need the fastest next step.' }, { value: 'this_week', title: 'This week', description: 'I have a little time, but need a plan.' }, { value: 'this_month', title: 'This month', description: 'I want to get ahead of the problem.' }, { value: 'planning', title: 'I’m planning ahead', description: 'I’m comparing options before I decide.' },
-];
-
 const STEP_TITLES = ['What’s happening?', 'How urgent is it?', 'Where should we look?'];
-const STEP_HINTS = ['Pick the closest fit.', 'We’ll prioritize the next step.', 'Enter the ZIP code where you need help.'];
+const STEP_HINTS = ['Select all that apply, then choose which concern to prioritize.', 'We’ll prioritize the next step.', 'Enter the ZIP code where you need help.'];
 
 export default function IntakeScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const intake = useHomeHeartsStore((state) => state.intake);
+  const concerns = getConcerns(intake);
   const setIntake = useHomeHeartsStore((state) => state.setIntake);
   const params = useLocalSearchParams<{ step?: string; location?: string; from?: string }>();
   const step = getIntakeStep(params, intake);
@@ -58,7 +56,7 @@ export default function IntakeScreen() {
   const questions = getLocationQuestions(programs, intake);
   const needsCounty = questions.counties.length > 0;
   const canContinue = [
-    Boolean(intake.issue),
+    concerns.length > 0 && Boolean(intake.issue),
     Boolean(intake.urgency),
     isZipCode(intake.zipCode) && (!needsCounty || Boolean(intake.county)) &&
       (!questions.askDallasCity || intake.insideDallas !== undefined),
@@ -103,20 +101,28 @@ export default function IntakeScreen() {
         <ProgressBar value={(step + 1) / 3} />
       </Reveal>
       {step === 0 && (
-        <View style={[styles.issueGrid, issueColumns === 1 && styles.issueGridSingle]}>
-          {issues.map((issue, index) => (
-            <View key={issue.value} style={[styles.issueTileWrap, issueColumns === 1 && styles.issueTileWrapSingle]}>
-              <Reveal index={index}>
-                <IssueTile icon={issue.icon} title={issue.title} accessibilityLabel={`${issue.title}. ${issue.description}`}
-                  selected={intake.issue === issue.value} onPress={() => setIntake({ issue: issue.value })} />
-              </Reveal>
-            </View>
-          ))}
+        <View>
+          <View style={[styles.issueGrid, issueColumns === 1 && styles.issueGridSingle]}>
+            {issues.map((issue, index) => (
+              <View key={issue.value} style={[styles.issueTileWrap, issueColumns === 1 && styles.issueTileWrapSingle]}>
+                <Reveal index={index}>
+                  <IssueTile icon={issue.icon} title={issue.title} accessibilityLabel={`${issue.title}. ${issue.description}`}
+                    selected={concerns.includes(issue.value)} onPress={() => setIntake(toggleConcern(intake, issue.value))} />
+                </Reveal>
+              </View>
+            ))}
+          </View>
+          {concerns.length > 0 && <View style={styles.options} accessibilityRole="radiogroup" accessibilityLabel="Primary housing concern">
+            <HText variant="bodyStrong">Which concern should we prioritize?</HText>
+            <HText variant="caption" color={colors.muted}>We’ll look for help with every selected concern. Your primary concern sorts first.</HText>
+            {issues.filter((issue) => concerns.includes(issue.value)).map((issue) => <OptionButton key={issue.value} title={issue.title}
+              accessibilityLabel={`Prioritize ${issue.title}`} selected={intake.issue === issue.value} onPress={() => setIntake({ issue: issue.value })} />)}
+          </View>}
         </View>
       )}
       {step === 1 && (
         <View style={styles.options}>
-          {urgencies.map((urgency, index) => (
+          {URGENCY_OPTIONS.map((urgency, index) => (
             <Reveal key={urgency.value} index={index}>
               <OptionButton title={urgency.title} description={urgency.description}
                 selected={intake.urgency === urgency.value} onPress={() => setIntake({ urgency: urgency.value })} />
@@ -148,7 +154,7 @@ export default function IntakeScreen() {
               <OptionButton title="I’m not sure" selected={intake.insideDallas === 'unsure'} onPress={() => setIntake({ insideDallas: 'unsure' })} />
             </View>
           )}
-          {intake.issue === 'rent_increase' && (
+          {concerns.includes('rent_increase') && (
             <Field label="Rent increase amount (optional)" keyboardType="decimal-pad" placeholder="$150"
               value={intake.rentIncreaseCents ? String(intake.rentIncreaseCents / 100) : ''}
               onChangeText={(value) => setIntake({ rentIncreaseCents: parseMoney(value) })} />

@@ -1,3 +1,4 @@
+import { getConcerns } from './intake';
 import { NATIONAL_211 } from '../data/programs';
 import { getZipArea, isZipCode, servesLocation } from './serviceArea';
 import { IntakeProfile, IssueType, MatchResult, Program, ProgramStatus, ServiceType } from './types';
@@ -33,7 +34,7 @@ const SERVICE_REASONS: Record<ServiceType, string> = {
 
 export function getLocationQuestions(programs: Program[], intake: IntakeProfile) {
   const location = getZipArea(intake.zipCode);
-  const services = intake.issue ? ISSUE_SERVICES[intake.issue] : [];
+  const services = getConcerns(intake).flatMap((issue) => ISSUE_SERVICES[issue]);
   const relevantAreas = programs
     .filter((program) => program.serviceTypes.some((service) => services.includes(service)))
     .map((program) => program.serviceArea);
@@ -91,19 +92,28 @@ export function getProgramAvailability(program: Program, now = new Date()) {
 
 export function getMatchResults(programs: Program[], intake: IntakeProfile, now = new Date(), national211: Program = NATIONAL_211) {
   const results: { actionable: MatchResult[]; later: MatchResult[]; referral?: Program } = { actionable: [], later: [] };
-  if (!isZipCode(intake.zipCode) || !intake.issue || !intake.urgency) return results;
+  const concerns = getConcerns(intake);
+  if (!isZipCode(intake.zipCode) || !concerns.length || !intake.urgency) return results;
 
-  const services = ISSUE_SERVICES[intake.issue];
-  const timeSensitive = intake.urgency === 'today' || intake.issue === 'shelter';
-  const needsHelpSoon = timeSensitive || intake.urgency === 'this_week';
+  const primary = intake.issue && concerns.includes(intake.issue) ? intake.issue : concerns[0];
+  const ordered = [primary, ...concerns.filter((issue) => issue !== primary)];
+  const timeSensitive = intake.urgency === 'today' || intake.urgency === 'within_3_days' || concerns.includes('shelter');
+  const needsHelpSoon = timeSensitive || intake.urgency === 'within_7_days';
+  const seen = new Set<string>();
   const ranked = programs.flatMap((program) => {
-    if (!servesLocation(program.serviceArea, intake)) return [];
-    const service = services.find((option) => program.serviceTypes.includes(option));
-    if (!service) return [];
+    if (seen.has(program.id) || !servesLocation(program.serviceArea, intake)) return [];
+    const matched = ordered.flatMap((concern) => {
+      const service = ISSUE_SERVICES[concern].find((option) => program.serviceTypes.includes(option));
+      return service ? [{ concern, service }] : [];
+    });
+    if (!matched.length) return [];
+    seen.add(program.id);
+    const { concern, service } = matched[0];
+    const services = ISSUE_SERVICES[concern];
 
     const status = getProgramAvailability(program, now).status;
     const later = status === 'closed' || status === 'waitlist' || (needsHelpSoon && program.kind === 'long_term');
-    const score = (services.length - services.indexOf(service)) * 3 +
+    const score = (concern === primary ? 100 : 0) + (services.length - services.indexOf(service)) * 3 +
       (status === 'open' ? 2 : 0) +
       (timeSensitive && program.immediate ? 3 : 0);
 
@@ -111,7 +121,7 @@ export function getMatchResults(programs: Program[], intake: IntakeProfile, now 
       later, score,
       match: {
         program,
-        matchedReasons: [SERVICE_REASONS[service], program.coverage],
+        matchedReasons: [...matched.map(({ concern, service }) => concerns.length === 1 ? SERVICE_REASONS[service] : `${issueLabel(concern)}: ${SERVICE_REASONS[service]}`), program.coverage],
         unknownReasons: program.eligibilityToConfirm ? [program.eligibilityToConfirm + ' to confirm'] : [],
       },
     }];

@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { migrateProgress, normalizeIntake, patchIntake } from '../domain/intake';
 import { setTaskDate } from '../domain/planning';
 import { ComparisonInput, DocumentKind, DocumentRecord, IntakeProfile, PlanTask } from '../domain/types';
 
@@ -25,7 +26,7 @@ type StoreState = {
   resetProgress: () => void;
 };
 
-const defaultIntake: IntakeProfile = { issue: null, urgency: null, zipCode: '' };
+const defaultIntake: IntakeProfile = { issue: null, issues: [], urgency: null, zipCode: '' };
 const defaultComparison: ComparisonInput = { monthlyStayCents: 145000, monthlyStayAfterIncreaseCents: 160000, movingUpfrontCents: 320000, movingMonthlyCents: 135000, horizonMonths: 12 };
 
 export const useHomeHeartsStore = create<StoreState>()(persist((set) => ({
@@ -35,7 +36,7 @@ export const useHomeHeartsStore = create<StoreState>()(persist((set) => ({
   savedPlanProgramId: null,
   documents: {},
   planTasks: [],
-  setIntake: (patch) => set((state) => ({ intake: { ...state.intake, ...patch } })),
+  setIntake: (patch) => set((state) => ({ intake: patchIntake(state.intake, patch) })),
   setComparison: (patch) => set((state) => ({ comparison: { ...state.comparison, ...patch } })),
   setSelectedProgram: (programId) => set({ selectedProgramId: programId }),
   setSavedPlanProgram: (savedPlanProgramId) => set({ savedPlanProgramId }),
@@ -48,5 +49,5 @@ export const useHomeHeartsStore = create<StoreState>()(persist((set) => ({
   recordCalendarExport: (programId, taskId, date) => set((state) => state.savedPlanProgramId === programId
     ? { planTasks: state.planTasks.map((task) => task.id === taskId ? { ...task, calendarExportedDate: date } : task) } : {}),
   resetProgress: () => set({ intake: defaultIntake, comparison: defaultComparison, selectedProgramId: null, savedPlanProgramId: null, documents: {}, planTasks: [] }),
-}), { name: 'homehearts-progress-v1', storage: createJSONStorage(() => AsyncStorage), partialize: (state) => ({ intake: state.intake, comparison: state.comparison, selectedProgramId: state.selectedProgramId, savedPlanProgramId: state.savedPlanProgramId, documents: Object.fromEntries(Object.entries(state.documents).map(([key, record]) => [key, record?.storageMode === 'supabase_private' ? record : { ...record, state: 'missing', localUri: undefined } ])), planTasks: state.planTasks }) }));
+}), { name: 'homehearts-progress-v1', version: 1, migrate: migrateProgress, merge: (saved, current) => { const progress = saved as Partial<StoreState> | undefined; return { ...current, ...progress, intake: normalizeIntake(progress?.intake ?? current.intake) }; }, storage: createJSONStorage(() => AsyncStorage), partialize: (state) => ({ intake: state.intake, comparison: state.comparison, selectedProgramId: state.selectedProgramId, savedPlanProgramId: state.savedPlanProgramId, documents: Object.fromEntries(Object.entries(state.documents).map(([key, record]) => [key, record?.storageMode === 'supabase_private' ? record : { ...record, state: 'missing', localUri: undefined } ])), planTasks: state.planTasks }) }));
 

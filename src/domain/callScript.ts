@@ -1,3 +1,4 @@
+import { getConcerns, urgencyLabel } from './intake';
 import { formatCurrency } from './cost';
 import { getProgramAvailability, issueLabel } from './matching';
 import { DOCUMENT_LABELS, IntakeProfile, Program } from './types';
@@ -22,15 +23,17 @@ const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1
 function buildIntro(program: Program, intake: IntakeProfile) {
   const about = program.provider && program.provider !== program.name ? `${program.name} with ${program.provider}` : program.name;
   let situation = 'looking for housing help';
-  if (intake.issue) {
-    situation = `facing ${issueLabel(intake.issue)}`;
-    if (intake.issue === 'rent_increase' && intake.rentIncreaseCents) situation += ` of ${formatCurrency(intake.rentIncreaseCents)} a month`;
+  const concerns = getConcerns(intake);
+  const primary = intake.issue && concerns.includes(intake.issue) ? intake.issue : concerns[0];
+  if (primary) {
+    const ordered = [primary, ...concerns.filter((concern) => concern !== primary)];
+    situation = `facing ${joinList(ordered.map((concern) => issueLabel(concern) + (concern === 'rent_increase' && intake.rentIncreaseCents ? ` of ${formatCurrency(intake.rentIncreaseCents)} a month` : '')))}`;
   }
   const where = intake.zipCode ? ` near ZIP code ${intake.zipCode}` : '';
   const goal = program.kind === 'referral'
     ? 'I’d like to find out what help is available and who I should contact next.'
     : 'I’d like to understand whether I may qualify and what I should prepare.';
-  return `Hi, I’m calling about ${about}. I’m ${situation}${where}. ${goal}`;
+  return `Hi, I’m calling about ${about}. I’m ${situation}${where}. ${concerns.length > 1 ? `My primary concern is ${issueLabel(primary)}. ` : ''}${intake.urgency ? `My timeframe is: ${urgencyLabel(intake.urgency)}. ` : ''}${goal}`;
 }
 
 function availabilityQuestion(program: Program, availability: ReturnType<typeof getProgramAvailability>) {
