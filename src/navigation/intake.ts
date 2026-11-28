@@ -1,3 +1,4 @@
+import { getConcerns } from '../domain/intake';
 import type { IntakeProfile } from '../domain/types';
 
 export type IntakeStep = 0 | 1 | 2;
@@ -12,7 +13,7 @@ export function getRequestedIntakeStep(params: IntakeParams): IntakeStep {
 /** A deep link may request a later question, but cannot skip missing answers. */
 export function getIntakeStep(params: IntakeParams, intake: IntakeProfile): IntakeStep {
   const requested = getRequestedIntakeStep(params);
-  if (requested > 0 && !intake.issue) return 0;
+  if (requested > 0 && !getConcerns(intake).length) return 0;
   if (requested > 1 && !intake.urgency) return 1;
   return requested;
 }

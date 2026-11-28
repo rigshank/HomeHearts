@@ -61,7 +61,7 @@ export function SectionHeading({ eyebrow, title, action }: { eyebrow?: string; t
 
 export function OptionButton({ title, description, selected, onPress, icon, accessibilityLabel, style }: { title: string; description?: string; selected?: boolean; onPress: () => void; icon?: IconName; accessibilityLabel?: string; style?: ViewStyle }) {
   const [focused, setFocused] = useState(false);
-  return <Pressable accessibilityRole="radio" accessibilityLabel={accessibilityLabel ?? title} accessibilityState={{ checked: Boolean(selected) }} aria-checked={Boolean(selected)} onPress={onPress} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} style={({ pressed }) => [styles.option, style, selected && styles.optionSelected, pressed && styles.buttonPressed, focused && styles.focusRing]}>
+  return <Pressable accessibilityRole="radio" accessibilityLabel={accessibilityLabel ?? title} accessibilityHint={description} accessibilityState={{ checked: Boolean(selected) }} aria-checked={Boolean(selected)} onPress={onPress} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} style={({ pressed }) => [styles.option, style, selected && styles.optionSelected, pressed && styles.buttonPressed, focused && styles.focusRing]}>
     {icon && <View style={[styles.optionIcon, selected && styles.optionIconSelected]}><Ionicons accessible={false} aria-hidden name={icon} size={20} color={selected ? colors.primary : colors.mutedStrong} /></View>}
     <View style={styles.optionCopy}><HText variant="bodyStrong">{title}</HText>{description && <HText variant="caption" color={colors.muted} style={styles.optionDescription}>{description}</HText>}</View>
     <View style={[styles.radio, selected && styles.radioSelected]}>{selected && <View style={styles.radioDot} />}</View>
@@ -70,10 +70,10 @@ export function OptionButton({ title, description, selected, onPress, icon, acce
 
 export function IssueTile({ icon, title, selected, onPress, accessibilityLabel }: { icon: IconName; title: string; selected?: boolean; onPress: () => void; accessibilityLabel?: string }) {
   const [focused, setFocused] = useState(false);
-  return <Pressable accessibilityRole="radio" accessibilityLabel={accessibilityLabel ?? title} accessibilityState={{ checked: Boolean(selected) }} aria-checked={Boolean(selected)} onPress={onPress} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} style={({ pressed }) => [styles.issueTile, selected && styles.issueTileSelected, pressed && styles.buttonPressed, focused && styles.focusRing]}>
+  return <Pressable accessibilityRole="checkbox" accessibilityLabel={accessibilityLabel ?? title} accessibilityState={{ checked: Boolean(selected) }} aria-checked={Boolean(selected)} onPress={onPress} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} style={({ pressed }) => [styles.issueTile, selected && styles.issueTileSelected, pressed && styles.buttonPressed, focused && styles.focusRing]}>
     <View style={[styles.issueTileIcon, selected && styles.issueTileIconSelected]}><Ionicons accessible={false} aria-hidden name={icon} size={20} color={selected ? colors.primary : colors.mutedStrong} /></View>
     <HText variant="caption" style={styles.issueTileTitle}>{title}</HText>
-    <View style={[styles.issueTileRadio, selected && styles.radioSelected]}>{selected && <View style={styles.radioDot} />}</View>
+    <View style={[styles.issueTileRadio, { borderRadius: 5 }, selected && styles.radioSelected]}>{selected && <Ionicons accessible={false} aria-hidden name="checkmark" size={15} color={colors.primary} />}</View>
   </Pressable>;
 }
 

@@ -4,7 +4,7 @@ import { buildCallScript } from './callScript';
 import { IntakeProfile } from './types';
 
 const checked = new Date('2026-11-13T18:00:00Z');
-const base: IntakeProfile = { issue: 'rent_increase', urgency: 'this_week', zipCode: '75201' };
+const base: IntakeProfile = { issue: 'rent_increase', urgency: 'within_7_days', zipCode: '75201' };
 const find = (id: string) => DALLAS_PROGRAMS.find((program) => program.id === id)!;
 
 describe('buildCallScript', () => {

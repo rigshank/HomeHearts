@@ -1,3 +1,4 @@
+import { getConcerns, urgencyLabel } from '../../src/domain/intake';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -49,7 +50,7 @@ export default function MatchesScreen() {
       <Reveal>
         <HText variant="micro" color={colors.primary}>RESOURCES FOR {intake.zipCode}</HText>
         <HText variant="title" style={styles.title}>Your housing options</HText>
-        <HText variant="body" color={colors.muted}>Based on {issueLabel(intake.issue)} and when you need help. Each provider checks eligibility.</HText>
+        <HText variant="body" color={colors.muted}>Selected concerns: {getConcerns(intake).map(issueLabel).join(', ')}. Primary: {issueLabel(intake.issue)}. Timeframe: {urgencyLabel(intake.urgency)}. Each provider checks eligibility.</HText>
         <Button variant="secondary" icon="create-outline" style={styles.editButton}
           onPress={() => router.push({ pathname: '/intake', params: { step: '0', from: 'matches' } })}>Edit answers</Button>
         <Button variant="ghost" icon="location-outline" style={styles.locationButton}
@@ -112,7 +113,7 @@ function ProgramCard({ match, now, onPress }: { match: MatchResult; now: Date; o
         </View>
       </View>
       <HText variant="caption" color={colors.mutedStrong}>{program.coverage} · {program.assistance.amountLabel}</HText>
-      {match.matchedReasons[0] && <HText variant="caption">{match.matchedReasons[0]}</HText>}
+      {match.matchedReasons.slice(0, -1).map((reason) => <HText key={reason} variant="caption">{reason}</HText>)}
       {match.unknownReasons.map((reason) => <HText key={reason} variant="caption" color={colors.warning}>{reason}</HText>)}
       {availability.timing && <HText variant="caption">{availability.timing}</HText>}
       <HText variant="micro" color={colors.muted}>SOURCE CHECKED {formatCatalogDate(program.verifiedAt).toUpperCase()}</HText>

@@ -1,5 +1,5 @@
 export type IssueType = 'rent_increase' | 'eviction' | 'utilities' | 'homeless' | 'shelter' | 'moving' | 'legal' | 'domestic_violence' | 'disability' | 'veteran' | 'youth' | 'general';
-export type Urgency = 'today' | 'this_week' | 'this_month' | 'planning';
+export type Urgency = 'today' | 'within_3_days' | 'within_7_days' | 'within_30_days' | 'planning';
 export type ProgramStatus = 'open' | 'waitlist' | 'closed' | 'referral_required' | 'call_to_verify' | 'unknown';
 export type ProgramCategory = 'rent' | 'utilities' | 'shelter' | 'legal' | 'housing' | 'moving' | 'general';
 export type DocumentKind = 'photo_id' | 'lease_or_rent_notice' | 'income_proof' | 'rent_increase_notice';
@@ -15,7 +15,10 @@ export type ServiceArea =
 export type ServiceType = ProgramCategory | 'safety' | 'accessible' | 'veteran' | 'youth';
 
 export type IntakeProfile = {
+  /** Primary concern; must be one of issues when concerns are selected. */
   issue: IssueType | null;
+  /** Optional only for compatibility with legacy single-concern callers. */
+  issues?: IssueType[];
   urgency: Urgency | null;
   zipCode: string;
   county?: County | 'unsure';
